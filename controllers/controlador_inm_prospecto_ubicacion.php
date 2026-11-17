@@ -466,6 +466,7 @@ class controlador_inm_prospecto_ubicacion extends _ctl_formato
 
                 $registro_doc['inm_ubicacion_id'] = $conversion->r_alta_ubicacion->registro_id;
                 $registro_doc['doc_tipo_documento_id'] = $registro['doc_tipo_documento_id'];
+                $registro_doc['es_foto'] = $registro['inm_doc_prospecto_ubicacion_es_foto'];
 
                 $r_inm_doc_ubicacion = (new inm_doc_ubicacion(link:$this->link))->alta_registro(registro: $registro_doc);
                 if (errores::$error) {
