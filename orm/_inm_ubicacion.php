@@ -30,7 +30,8 @@ class _inm_ubicacion{
         if(errores::$error){
             return $this->error->error(mensaje: 'Error al integrar button',data:  $button);
         }
-        $inm_conf_docs_ubicacion[$indice][$accion] = $button;
+        $inm_conf_docs_ubicacion[$accion] = $button;
+
         return $inm_conf_docs_ubicacion;
     }
 
@@ -248,11 +249,11 @@ class _inm_ubicacion{
 
     private function integra_button_default(string $button, int $indice, array $inm_conf_docs_ubicacion): array
     {
-        $inm_conf_docs_ubicacion[$indice]['descarga'] = $button;
-        $inm_conf_docs_ubicacion[$indice]['vista_previa'] = $button;
-        $inm_conf_docs_ubicacion[$indice]['descarga_zip'] = $button;
-        $inm_conf_docs_ubicacion[$indice]['elimina_bd'] = $button;
-        $inm_conf_docs_ubicacion[$indice]['subir_documento'] = $button;
+        $inm_conf_docs_ubicacion['descarga'] = $button;
+        $inm_conf_docs_ubicacion['vista_previa'] = $button;
+        $inm_conf_docs_ubicacion['descarga_zip'] = $button;
+        $inm_conf_docs_ubicacion['elimina_bd'] = $button;
+        $inm_conf_docs_ubicacion['subir_documento'] = $button;
         return $inm_conf_docs_ubicacion;
     }
 
@@ -355,61 +356,54 @@ class _inm_ubicacion{
             return $this->error->error(mensaje: 'Error al obtener inm_docs_ubicacion',data:  $inm_docs_ubicacion);
         }
 
-        $documentos_indexados = [];
-        foreach ($inm_docs_ubicacion as $documento) {
-            $doc_tipo_documento_id = (int)$documento['doc_tipo_documento_id'];
-            $documentos_indexados[$doc_tipo_documento_id] = $documento;
-        }
-
         $result = array();
         foreach ($inm_conf_docs_ubicacion->registros as $indice => $doc_tipo_documento){
             $doc_tipo_documento_id = (int)$doc_tipo_documento['doc_tipo_documento_id'];
 
-            if(isset($documentos_indexados[$doc_tipo_documento_id])){
-                $documento_existente = $documentos_indexados[$doc_tipo_documento_id];
+            $resultado_docs = array();
+            $resultado_docs['documentos'] = array();
+            foreach ($inm_docs_ubicacion as $documento) {
+                if ((int)$documento['doc_tipo_documento_id'] === $doc_tipo_documento_id) {
+                    $documento_existente = $documento;
 
-                $ruta_doc = (new generales())->url_base."$documento_existente[doc_documento_ruta_relativa]";
-                if((new generales())->guarda_archivo_dropbox) {
-                    $guarda = (new _dropbox(link: $controler->link))->preview(
-                        dropbox_id: $documento_existente['inm_dropbox_ruta_id_dropbox'],
-                        extencion: $documento_existente['doc_extension_descripcion']);
-                    if (errores::$error) {
-                        return $this->error->error('Error al guardar archivo', $guarda);
+                    $generales = new generales();
+                    $ruta_doc = $generales->url_base."$documento_existente[doc_documento_ruta_relativa]";
+                    if($generales->guarda_archivo_dropbox) {
+                        $guarda = (new _dropbox(link: $controler->link))->preview(
+                            dropbox_id: $documento_existente['inm_dropbox_ruta_id_dropbox'],
+                            extencion: $documento_existente['doc_extension_descripcion']);
+                        if (errores::$error) {
+                            return $this->error->error('Error al guardar archivo', $guarda);
+                        }
+
+                        $ruta_doc = $guarda->ruta_mostrar;
                     }
 
-                    $ruta_doc = $guarda->ruta_mostrar;
-                }
+                    $salida_doc = $this->buttons_base(
+                        controler: $controler, indice: 0, inm_ubicacion_id: $controler->registro_id,
+                        inm_conf_docs_ubicacion: $doc_tipo_documento, inm_doc_ubicacion: $documento_existente);
+                    if(errores::$error){
+                        return $this->error->error(mensaje: 'Error al integrar button',data:  $salida_doc);
+                    }
 
-                $salida_doc = $this->buttons_base(
-                    controler: $controler, indice: 0, inm_ubicacion_id: $controler->registro_id,
-                    inm_conf_docs_ubicacion: array($doc_tipo_documento), inm_doc_ubicacion: $documento_existente);
-                if(errores::$error){
-                    return $this->error->error(mensaje: 'Error al integrar button',data:  $salida_doc);
-                }
+                    $salida_doc['ruta_doc'] = $ruta_doc;
+                    $salida_doc['inm_doc_id'] = $documento_existente['inm_doc_ubicacion_id'];
 
-                $salida_doc = $salida_doc[0];
-                $salida_doc['ruta_doc'] = $ruta_doc;
-                $salida_doc['inm_doc_id'] = $documento_existente['inm_doc_ubicacion_id'];
-            }
-            else{
-                $button = $controler->html->input_file_sec(cols: 12, name:
-                    'documentos['.$doc_tipo_documento['doc_tipo_documento_id'].'][]',
-                    row_upd: new stdClass(), value_vacio: false, place_holder: 'Subir Documento', required: false,
-                    con_label: false);
-                if (errores::$error) {
-                    return $this->error->error(mensaje: 'Error al obtener inputs', data: $button);
+                    $resultado_docs['documentos'][] = $salida_doc;
                 }
-
-                $salida_doc = $this->integra_button_default(button: $button,
-                    indice: 0, inm_conf_docs_ubicacion: array($doc_tipo_documento));
-                if(errores::$error){
-                    return $this->error->error(mensaje: 'Error al integrar button',data:  $salida_doc);
-                }
-
-                $salida_doc = $salida_doc[0];
             }
 
-            $result[$indice] = $salida_doc;
+            $button = $controler->html->input_file_sec(cols: 12, name: 'documentos[' . $doc_tipo_documento['doc_tipo_documento_id'] . '][]',
+                row_upd: new stdClass(), value_vacio: false, place_holder: 'Subir Documento', required: false,
+                con_label: false);
+            if (errores::$error) {
+                return $this->error->error(mensaje: 'Error al obtener inputs', data: $button);
+            }
+
+            $result[$indice] = $resultado_docs;
+
+            $result[$indice]['doc_tipo_documento_descripcion'] = $doc_tipo_documento['doc_tipo_documento_descripcion'];
+            $result[$indice]['subir_documento'] = $button;
         }
 
         return $result;

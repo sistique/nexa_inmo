@@ -582,21 +582,16 @@ class _inm_prospecto{
             return $this->error->error(mensaje: 'Error al obtener inm_docs_prospecto',data:  $inm_docs_prospecto);
         }
 
-        $documentos_indexados = [];
-
-        foreach ($inm_docs_prospecto as $documento) {
-            $doc_tipo_documento_id = (int) $documento['doc_tipo_documento_id'];
-
-            $documentos_indexados[$doc_tipo_documento_id] = $documento;
-        }
-
         $result = array();
 
         foreach ($inm_conf_docs_prospecto->registros as $indice => $doc_tipo_documento){
             $doc_tipo_documento_id = (int) $doc_tipo_documento['doc_tipo_documento_id'];
+            $documentos = array();
 
-            if(isset($documentos_indexados[$doc_tipo_documento_id])){
-                $documento_existente = $documentos_indexados[$doc_tipo_documento_id];
+            foreach ($inm_docs_prospecto as $documento_existente) {
+                if ((int) $documento_existente['doc_tipo_documento_id'] !== $doc_tipo_documento_id) {
+                    continue;
+                }
 
                 $ruta_doc = (new generales())->url_base."$documento_existente[doc_documento_ruta_relativa]";
 
@@ -620,24 +615,22 @@ class _inm_prospecto{
 
                 $salida_doc['ruta_doc'] = $ruta_doc;
                 $salida_doc['inm_doc_id'] = $documento_existente['inm_doc_prospecto_id'];
-            }else{
-                $nombre_input = 'documentos['.$doc_tipo_documento['doc_tipo_documento_id'].'][]';
-
-                $button = $controler->html->input_file_sec(cols: 12, name: $nombre_input,
-                    row_upd: new stdClass(), value_vacio: false, place_holder: 'Subir Documento',required: false,
-                    con_label: false);
-                if (errores::$error) {
-                    return $this->error->error(mensaje: 'Error al obtener inputs', data: $button);
-                }
-
-                $salida_doc = $this->integra_button_default(button: $button,
-                    indice:  $indice, inm_conf_docs_prospecto:  $doc_tipo_documento);
-                if(errores::$error){
-                    return $this->error->error(mensaje: 'Error al integrar button',data:  $salida_doc);
-                }
+                $documentos[] = $salida_doc;
             }
 
-            $result[$indice] = $salida_doc;
+            $button = $controler->html->input_file_sec(cols: 12,
+                name: 'documentos['.$doc_tipo_documento['doc_tipo_documento_id'].'][]',
+                row_upd: new stdClass(), value_vacio: false, place_holder: 'Subir Documento', required: false,
+                con_label: false);
+            if (errores::$error) {
+                return $this->error->error(mensaje: 'Error al obtener inputs', data: $button);
+            }
+
+            $result[$indice] = array(
+                'documentos' => $documentos,
+                'doc_tipo_documento_descripcion' => $doc_tipo_documento['doc_tipo_documento_descripcion'],
+                'subir_documento' => $button
+            );
         }
 
         return $result;

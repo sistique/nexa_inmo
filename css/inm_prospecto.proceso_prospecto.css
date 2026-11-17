@@ -164,3 +164,7 @@ hr {
 #table-inm_prospecto{
     width: 100% !important;
 }
+
+.tr-documento-top{
+    border-top: 3px solid #9E9E9E !important;
+}

@@ -2690,7 +2690,26 @@ class controlador_inm_ubicacion extends _ctl_base
         $temp = array();
         $ruta_docs = array();
         foreach ($result_docs as $docs) {
-            $res = "<tr>
+            $cont = count($docs['documentos']) + 1;
+            $res = "<tr class='tr-documento-top'>
+                        <td class='td-doc' rowspan='$cont'><div class='descripcion-doc'>$docs[doc_tipo_documento_descripcion]</div></td>
+                        <td colspan='4'>$docs[subir_documento]</td>
+                    </tr>";
+
+            $doc_temp = array();
+            foreach ($docs['documentos'] as $doc) {
+                $res .= "<tr>
+                            <td>$doc[descarga]</td>
+                            <td>$doc[vista_previa]</td>
+                            <td>$doc[descarga_zip]</td>
+                            <td>$doc[elimina_bd]</td>
+                         </tr>";
+                $doc_temp['inm_doc_id'] = $doc['inm_doc_id'];
+                $doc_temp['ruta_doc'] = $doc['ruta_doc'];
+                $ruta_docs[] = $doc_temp;
+            }
+
+            /*$res = "<tr>
             <td class='td-doc'><div class='descripcion-doc'>$docs[doc_tipo_documento_descripcion]</div></td>
             <td>$docs[descarga]</td>
             <td>$docs[vista_previa]</td>
@@ -2708,7 +2727,7 @@ class controlador_inm_ubicacion extends _ctl_base
                 $doc_temp['inm_doc_id'] = $docs['inm_doc_id'];
                 $doc_temp['ruta_doc'] = $docs['ruta_doc'];
                 $ruta_docs[] = $doc_temp;
-            }
+            }*/
 
             $temp[] = $res;
         }
@@ -3938,7 +3957,7 @@ class controlador_inm_ubicacion extends _ctl_base
                 $fotos[$registro['doc_tipo_documento_id']][] = $contenedor;
             }
 
-            $documento = $this->html->input_file(cols: 12, name: "fotos[$registro[doc_tipo_documento_id]][]",
+            $documento = $this->html->input_file_sec(cols: 12, name: "fotos[$registro[doc_tipo_documento_id]][]",
                 row_upd: new stdClass(), value_vacio: false, place_holder: $registro['doc_tipo_documento_descripcion'],
                 required: false, multiple: true);
             if (errores::$error) {

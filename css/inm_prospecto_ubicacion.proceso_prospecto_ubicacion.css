@@ -284,3 +284,7 @@ dialog h2 {
     height: auto;
     border-radius: 5px;
 }
+
+.tr-documento-top{
+    border-top: 3px solid #9E9E9E !important;
+}
