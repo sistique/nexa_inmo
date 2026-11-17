@@ -2996,7 +2996,17 @@ class controlador_inm_comprador extends _ctl_base {
 
             $co_acreditado_nombre_completo = '';
             if(count($inm_co_acreditados) > 0) {
-                $co_acreditado_nombre_completo = " y $inm_co_acreditados[0][inm_co_acreditado_nombre] $inm_co_acreditados[0][inm_co_acreditado_apellido_paterno] $inm_co_acreditados[0][inm_co_acreditado_apellido_materno]";
+                $co = $inm_co_acreditados[0];
+
+                $partes = array_filter([
+                    trim($co['inm_co_acreditado_nombre'] ?? ''),
+                    trim($co['inm_co_acreditado_apellido_paterno'] ?? ''),
+                    trim($co['inm_co_acreditado_apellido_materno'] ?? '')
+                ]);
+
+                if (!empty($partes)) {
+                    $co_acreditado_nombre_completo = ' y ' . mb_strtoupper(implode(' ', $partes));
+                }
             }
 
             $this->receptor = $correo;
