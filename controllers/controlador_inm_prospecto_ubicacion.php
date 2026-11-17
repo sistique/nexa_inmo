@@ -51,6 +51,7 @@ use gamboamartin\inmuebles\models\inm_status_prospecto_ubicacion;
 use gamboamartin\inmuebles\models\inm_tipo_beneficiario;
 use gamboamartin\inmuebles\models\inm_tipo_compra;
 use gamboamartin\inmuebles\models\inm_tipo_credito;
+use gamboamartin\inmuebles\models\inm_ubicacion;
 use gamboamartin\plugins\exportador;
 use gamboamartin\plugins\files;
 use gamboamartin\plugins\Importador;
@@ -420,36 +421,63 @@ class controlador_inm_prospecto_ubicacion extends _ctl_formato
 
         if ($this->registro_id <= 0) {
             $this->link->rollBack();
-            return $this->retorno_error(mensaje: 'Error registro_id debe ser mayor a 0', data: $this->registro_id,
-                header: true, ws: false);
+            return $this->retorno_error(
+                mensaje: 'Error registro_id debe ser mayor a 0',
+                data: $this->registro_id,
+                header: $header,
+                ws: $ws
+            );
         }
 
-        $conversion = (new inm_prospecto_ubicacion(link: $this->link))->convierte_ubicacion(
-            inm_prospecto_ubicacion_id: $this->registro_id);
+        $conversion = (new inm_prospecto_ubicacion(link: $this->link))
+            ->convierte_ubicacion(
+                inm_prospecto_ubicacion_id: $this->registro_id
+            );
+
         if (errores::$error) {
             $this->link->rollBack();
-            return $this->retorno_error(mensaje: 'Error al convertir en ubicacion', data: $conversion,
-                header: true, ws: false, class: __CLASS__, file: __FILE__, function: __FILE__, line: __LINE__);
+            return $this->retorno_error(
+                mensaje: 'Error al convertir en ubicacion',
+                data: $conversion,
+                header: $header,
+                ws: $ws
+            );
         }
 
         $filtro_prosp['inm_prospecto_ubicacion.id'] = $this->registro_id;
-        $r_doc_prospecto_ubicacion = (new inm_doc_prospecto_ubicacion(link:$this->link))->filtro_and(
-            filtro: $filtro_prosp);
+        $r_doc_prospecto_ubicacion = (new inm_doc_prospecto_ubicacion(link:$this->link))
+            ->filtro_and(
+                filtro: $filtro_prosp
+            );
+
         if (errores::$error) {
             $this->link->rollBack();
-            return $this->retorno_error(mensaje: 'Error al convertir en cliente', data: $r_doc_prospecto_ubicacion,
-                header: true, ws: false, class: __CLASS__, file: __FILE__, function: __FILE__, line: __LINE__);
+            return $this->retorno_error(
+                mensaje: 'Error al convertir en cliente',
+                data: $r_doc_prospecto_ubicacion,
+                header: $header,
+                ws: $ws
+            );
         }
 
         if($r_doc_prospecto_ubicacion->n_registros > 0){
             foreach ($r_doc_prospecto_ubicacion->registros as $registro) {
                 $ruta = $registro['doc_documento_ruta_absoluta'];
-                if((new generales())->guarda_archivo_dropbox && trim((string)$registro['inm_dropbox_ruta_id_dropbox']) !== '') {
-                    $guarda = (new _dropbox(link: $this->link))->preview(
-                        dropbox_id: $registro['inm_dropbox_ruta_id_dropbox'],
-                        extencion: $registro['doc_extension_descripcion']);
+
+                if((new generales())->guarda_archivo_dropbox &&
+                    trim((string)$registro['inm_dropbox_ruta_id_dropbox']) !== '') {
+
+                    $guarda = (new _dropbox(link: $this->link))
+                        ->preview(
+                            dropbox_id: $registro['inm_dropbox_ruta_id_dropbox'],
+                            extencion: $registro['doc_extension_descripcion']
+                        );
+
                     if (errores::$error) {
-                        return $this->retorno_error('Error al guardar archivo', $guarda, header: $header,
+                        return $this->retorno_error(
+                            mensaje:'Error al guardar archivo',
+                            data: $guarda,
+                            header: $header,
                             ws: $ws);
                     }
 
@@ -468,15 +496,37 @@ class controlador_inm_prospecto_ubicacion extends _ctl_formato
                 $registro_doc['doc_tipo_documento_id'] = $registro['doc_tipo_documento_id'];
                 $registro_doc['es_foto'] = $registro['inm_doc_prospecto_ubicacion_es_foto'];
 
-                $r_inm_doc_ubicacion = (new inm_doc_ubicacion(link:$this->link))->alta_registro(registro: $registro_doc);
+                $r_inm_doc_ubicacion = (new inm_doc_ubicacion(link:$this->link))
+                    ->alta_registro(
+                        registro: $registro_doc
+                    );
+
                 if (errores::$error) {
                     $this->link->rollBack();
-                    return $this->retorno_error(mensaje: 'Error al convertir en cliente', data: $r_inm_doc_ubicacion,
-                        header: true, ws: false, class: __CLASS__, file: __FILE__, function: __FILE__, line: __LINE__);
+                    return $this->retorno_error(
+                        mensaje: 'Error al convertir en cliente',
+                        data: $r_inm_doc_ubicacion,
+                        header: $header,
+                        ws: $ws
+                    );
                 }
             }
         }
 
+        $r_altas_presupuesto = (new inm_ubicacion(link: $this->link))
+            ->genera_presupuesto(
+                inm_ubicacion_id: $conversion->r_alta_ubicacion->registro_id
+            );
+
+        if (errores::$error) {
+            $this->link->rollBack();
+            $this->retorno_error(
+                mensaje: 'Error al obtener registro de configuraciones',
+                data: $r_altas_presupuesto,
+                header: $header,
+                ws: $ws
+            );
+        }
 
         $this->link->commit();
 
@@ -489,9 +539,15 @@ class controlador_inm_prospecto_ubicacion extends _ctl_formato
 
         $controlador_ubicacion =  new controlador_inm_ubicacion(link: $this->link);
         if($header){
-            $controlador_ubicacion->retorno_base(registro_id:$retorno->id_retorno, result: $conversion,
-                siguiente_view: $retorno->siguiente_view, ws:  $ws, seccion_retorno: 'inm_ubicacion',
-                valida_permiso: true);
+            $controlador_ubicacion
+                ->retorno_base(
+                    registro_id:$retorno->id_retorno,
+                    result: $conversion,
+                    siguiente_view: $retorno->siguiente_view,
+                    ws:  $ws,
+                    seccion_retorno: 'inm_ubicacion',
+                    valida_permiso: true
+                );
         }
 
         return $conversion;

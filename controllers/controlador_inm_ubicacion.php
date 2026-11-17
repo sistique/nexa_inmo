@@ -4082,41 +4082,19 @@ class controlador_inm_ubicacion extends _ctl_base
     {
         $this->link->beginTransaction();
 
-        $filtro_comf = ['inm_conf_presupuesto_costo.status' => 'activo'];
-        $r_conf_presupuesto = (new inm_conf_presupuesto_costo(link: $this->link))->filtro_and(filtro: $filtro_comf);
+        $r_altas_presupuesto = (new inm_ubicacion(link: $this->link))
+            ->genera_presupuesto(
+                inm_ubicacion_id: $this->registro_id
+            );
+
         if (errores::$error) {
             $this->link->rollBack();
-            $this->retorno_error(mensaje: 'Error al obtener registro de configuraciones', data: $r_conf_presupuesto,
-                header: $header, ws: $ws);
-        }
-
-        $altas = [];
-        foreach ($r_conf_presupuesto->registros as $registro) {
-            $filtro_presupuesto = [
-                'inm_ubicacion.id' => $this->registro_id,
-                'inm_concepto.id' => $registro['inm_concepto_id']
-            ];
-            $existe = (new inm_presupuesto_costo(link: $this->link))->existe(filtro: $filtro_presupuesto);
-            if (errores::$error) {
-                $this->link->rollBack();
-                $this->retorno_error(mensaje: 'Error al validar si existe registro de presupuesto', data: $existe,
-                    header: $header, ws: $ws);
-            }
-
-            if(!$existe) {
-                $registro_presupuesto = array();
-                $registro_presupuesto['inm_ubicacion_id'] = $this->registro_id;
-                $registro_presupuesto['inm_concepto_id'] = $registro['inm_concepto_id'];
-                $registro_presupuesto['monto_presupuesto'] = $registro['inm_conf_presupuesto_costo_monto_presupuesto'];
-                $r_inm_presupuesto = (new inm_presupuesto_costo(link: $this->link))->alta_registro(registro: $registro_presupuesto);
-                if (errores::$error) {
-                    $this->link->rollBack();
-                    $this->retorno_error(mensaje: 'Error al insertar registro de presupuesto', data: $r_inm_presupuesto,
-                        header: $header, ws: $ws);
-                }
-
-                $altas[] = $r_inm_presupuesto;
-            }
+            $this->retorno_error(
+                mensaje: 'Error al obtener registro de configuraciones',
+                data: $r_altas_presupuesto,
+                header: $header,
+                ws: $ws
+            );
         }
 
         $this->link->commit();
@@ -4189,6 +4167,7 @@ class controlador_inm_ubicacion extends _ctl_base
         $datatables->filtro = $filtro;
         $datatables->menu_active = true;
         $datatables->order_sec = array('inm_status_ubicacion.id' => 'ASC', 'inm_ubicacion.id' => 'DESC');
+        $datatables->dom = "<'row'<'col-md-12'tr>><'row mt-2'<'col-md-4'l><'col-md-4'i><'col-md-4'p>>";
 
         return $datatables;
     }

@@ -542,6 +542,68 @@ class inm_ubicacion extends _inm_ubicaciones {
         return $existe_co_acreditado;
     }
 
+    public function genera_presupuesto(int $inm_ubicacion_id): array|stdClass
+    {
+        $filtro_comf = [
+            'inm_conf_presupuesto_costo.status' => 'activo'
+        ];
+
+        $r_conf_presupuesto = (new inm_conf_presupuesto_costo(link: $this->link))
+            ->filtro_and(
+                filtro: $filtro_comf
+            );
+
+        if (errores::$error) {
+            $this->error->error(
+                mensaje: 'Error al obtener registro de configuraciones',
+                data: $r_conf_presupuesto
+            );
+        }
+
+        $altas = [];
+        foreach ($r_conf_presupuesto->registros as $registro) {
+            $filtro_presupuesto = [
+                'inm_ubicacion.id' => $inm_ubicacion_id,
+                'inm_concepto.id' => $registro['inm_concepto_id']
+            ];
+
+            $existe = (new inm_presupuesto_costo(link: $this->link))
+                ->existe(
+                    filtro: $filtro_presupuesto
+                );
+
+            if (errores::$error) {
+                $this->error->error(
+                    mensaje: 'Error al validar si existe registro de presupuesto',
+                    data: $existe
+                );
+            }
+
+            if(!$existe) {
+                $registro_presupuesto = array();
+                $registro_presupuesto['inm_ubicacion_id'] = $inm_ubicacion_id;
+                $registro_presupuesto['inm_concepto_id'] = $registro['inm_concepto_id'];
+                $registro_presupuesto['monto_presupuesto'] = $registro['inm_conf_presupuesto_costo_monto_presupuesto'];
+
+                $r_inm_presupuesto = (new inm_presupuesto_costo(link: $this->link))
+                    ->alta_registro(
+                        registro: $registro_presupuesto
+                    );
+
+                if (errores::$error) {
+                    $this->error->error(
+                        mensaje: 'Error al insertar registro de presupuesto',
+                        data: $r_inm_presupuesto
+                    );
+                }
+
+                $altas[] = $r_inm_presupuesto;
+            }
+        }
+
+        return $altas;
+    }
+
     /**
      * Obtiene el costo origen
      * @param int $inm_ubicacion_id Ubicacion id
