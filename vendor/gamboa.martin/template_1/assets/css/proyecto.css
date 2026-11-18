@@ -1465,3 +1465,7 @@ dialog h2 {
     height: auto;
     border-radius: 5px;
 }
+
+[id^="apartado_"] {
+    scroll-margin-top: 50px;
+}

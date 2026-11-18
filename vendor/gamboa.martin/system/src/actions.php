@@ -492,7 +492,7 @@ class actions{
      * @version 0.22.2
      */
     final public function retorno_alta_bd(PDO $link, int $registro_id, string $seccion, string $siguiente_view,
-                                          array $params = array(), bool $valida_permiso = false): array|string
+                                          array $params = array(), bool $valida_permiso = false, string $ancla = ''): array|string
     {
         $seccion = trim($seccion);
         if ($seccion === '') {
@@ -506,7 +506,7 @@ class actions{
 
         $link = (new links_menu(link: $link, registro_id: $registro_id))->link_con_id(
             accion: $siguiente_view, link: $link, registro_id: $registro_id, seccion: $seccion, params: $params,
-            valida_permiso: $valida_permiso
+            valida_permiso: $valida_permiso, ancla: $ancla
         );
 
         if (errores::$error) {
@@ -517,7 +517,7 @@ class actions{
     }
 
     final public function retorno_modifica_bd(PDO $link, int $registro_id, string $seccion, string $siguiente_view,
-                                          array $params = array(), bool $valida_permiso = false): array|string
+                                          array $params = array(), bool $valida_permiso = false, string $ancla = ""): array|string
     {
         $seccion = trim($seccion);
         if ($seccion === '') {
@@ -531,7 +531,7 @@ class actions{
 
         $link = (new links_menu(link: $link, registro_id: $registro_id))->link_con_id(
             accion: $siguiente_view, link: $link, registro_id: $registro_id, seccion: $seccion, params: $params,
-            valida_permiso: $valida_permiso
+            valida_permiso: $valida_permiso, ancla: $ancla
         );
 
         if (errores::$error) {

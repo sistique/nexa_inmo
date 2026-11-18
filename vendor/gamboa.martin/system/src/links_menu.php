@@ -498,7 +498,7 @@ class links_menu{
      * // )
      * ```
      */
-    private function data_link(string $accion, PDO $link, array $params, string $seccion): array|stdClass
+    private function data_link(string $accion, PDO $link, array $params, string $seccion, string $ancla): array|stdClass
     {
         // Genera los parámetros GET
         $vars_get = $this->var_gets(params_get: $params);
@@ -512,10 +512,16 @@ class links_menu{
             return $this->error->error(mensaje: 'Error al validar si tengo permiso', data: $tengo_permiso);
         }
 
+        if($ancla !== ''){
+            $ancla = "#$ancla";
+        }
+
         // Crea y retorna el objeto con los datos generados
         $data = new stdClass();
         $data->vars_get = $vars_get;
         $data->tengo_permiso = $tengo_permiso;
+        $data->ancla = $ancla;
+
         return $data;
     }
 
@@ -603,7 +609,8 @@ class links_menu{
         int $registro_id,
         string $seccion,
         bool $tengo_permiso,
-        string $vars_get
+        string $vars_get,
+        string $ancla
     ): string|array
     {
         // Inicializa el enlace vacío
@@ -615,7 +622,8 @@ class links_menu{
                 accion: $accion,
                 registro_id: $registro_id,
                 seccion: $seccion,
-                vars_get: $vars_get
+                vars_get: $vars_get,
+                ancla: $ancla
             );
 
             // Si ocurre un error en link_ancla(), retorna un mensaje de error
@@ -817,11 +825,12 @@ class links_menu{
         PDO $link,
         array $params,
         string $seccion,
-        bool $valida_permiso
+        bool $valida_permiso,
+        string $ancla
     ): array|stdClass
     {
         // Obtiene los datos del enlace
-        $data_link = $this->data_link(accion: $accion, link: $link, params: $params, seccion: $seccion);
+        $data_link = $this->data_link(accion: $accion, link: $link, params: $params, seccion: $seccion, ancla: $ancla);
         if (errores::$error) {
             return $this->error->error(mensaje: 'Error al integrar data_link', data: $data_link);
         }
@@ -1520,7 +1529,8 @@ class links_menu{
         array $params,
         int $registro_id,
         string $seccion,
-        bool $valida_permiso
+        bool $valida_permiso,
+        string $ancla
     ): array|string
     {
         // Obtiene los datos necesarios para el enlace, como permisos y parámetros GET
@@ -1529,7 +1539,8 @@ class links_menu{
             link: $link,
             params: $params,
             seccion: $seccion,
-            valida_permiso: $valida_permiso
+            valida_permiso: $valida_permiso,
+            ancla: $ancla
         );
 
         // Si hay un error en la obtención de datos, retorna un mensaje de error
@@ -1543,7 +1554,8 @@ class links_menu{
             registro_id: $registro_id,
             seccion: $seccion,
             tengo_permiso: $data_link->tengo_permiso,
-            vars_get: $data_link->vars_get
+            vars_get: $data_link->vars_get,
+            ancla: $data_link->ancla
         );
 
         // Si hay un error al generar el enlace, retorna un mensaje de error
@@ -2255,7 +2267,7 @@ class links_menu{
      * // "./index.php?adm_menu_id=3&session_id=xyz123"
      * ```
      */
-    private function link_ancla(string $accion, int $registro_id, string $seccion, string $vars_get): string|array
+    private function link_ancla(string $accion, int $registro_id, string $seccion, string $vars_get, string $ancla): string|array
     {
         // Obtiene el ID del menú activo
         $adm_menu_id = $this->adm_menu_id();
@@ -2281,7 +2293,7 @@ class links_menu{
 
         // Construcción del enlace con los parámetros
         $link_ancla = "./index.php?$seccion_p&$accion_p$param_registro_id&$adm_menu_id_p";
-        $link_ancla .= "&session_id=$this->session_id$vars_get";
+        $link_ancla .= "&session_id=$this->session_id$vars_get$ancla";
 
         return $link_ancla;
     }
@@ -2334,7 +2346,8 @@ class links_menu{
         int $registro_id,
         string $seccion,
         array $params = array(),
-        bool $valida_permiso = false
+        bool $valida_permiso = false,
+        string $ancla = ""
     ): array|string {
         // Elimina espacios en blanco en los parámetros de entrada
         $accion = trim($accion);
@@ -2353,7 +2366,8 @@ class links_menu{
             params: $params,
             registro_id: $registro_id,
             seccion: $seccion,
-            valida_permiso: $valida_permiso
+            valida_permiso: $valida_permiso,
+            ancla: $ancla
         );
 
         // Si hay un error al generar el enlace, retorna un mensaje de error
@@ -2590,7 +2604,8 @@ class links_menu{
         return $modifica;
     }
 
-    final public function link_sin_id(string $accion, PDO $link, string $seccion, array $params = array(), bool $valida_permiso = false): array|string
+    final public function link_sin_id(string $accion, PDO $link, string $seccion, array $params = array(),
+                                      bool $valida_permiso = false, string $ancla = ''): array|string
     {
         $accion = trim($accion);
         $seccion = trim($seccion);
@@ -2601,7 +2616,8 @@ class links_menu{
         }
 
 
-        $link_ancla = $this->integra_link_ancla(accion: $accion,link:  $link,params:  $params,registro_id:  -1,seccion:  $seccion,valida_permiso:  $valida_permiso);
+        $link_ancla = $this->integra_link_ancla(accion: $accion,link:  $link,params:  $params,registro_id:  -1,
+            seccion: $seccion,valida_permiso:  $valida_permiso, ancla: $ancla);
         if(errores::$error){
             return $this->error->error(mensaje: 'Error al obtener link', data: $link_ancla);
         }

@@ -29,7 +29,12 @@
                             <?php echo $controlador->inputs->inm_plazo_credito_sc_id; ?>
                             <?php echo $controlador->inputs->devolucion; ?>
                             <div class="contenido-credito"></div>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_1">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_2; ?>
@@ -71,7 +76,11 @@
 
                             <?php echo $controlador->inputs->observaciones; ?>
 
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_2">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_3; ?>
@@ -84,7 +93,11 @@
                             <?php echo $controlador->inputs->monto_final; ?>
                             <?php echo $controlador->inputs->descuento; ?>
                             <?php echo $controlador->inputs->puntos; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_3">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_4; ?>
@@ -92,7 +105,11 @@
                             <?php echo $controlador->inputs->con_discapacidad; ?>
                             <?php echo $controlador->inputs->inm_tipo_discapacidad_id; ?>
                             <?php echo $controlador->inputs->inm_persona_discapacidad_id; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_4">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_5; ?>
@@ -106,7 +123,11 @@
                             <?php echo $controlador->inputs->inm_sindicato_id; ?>
                             <?php echo $controlador->inputs->direccion_empresa; ?>
 
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_5">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_6; ?>
@@ -124,7 +145,11 @@
                             <?php echo $controlador->inputs->inm_co_acreditado->numero_credito; ?>
                             <?php echo $controlador->inputs->inm_co_acreditado->adeudo_hipoteca; ?>
 
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_6">Modifica</button><br>
+                                </div>
+                            </div>
 
                         </div>
 
@@ -133,7 +158,11 @@
                             <?php echo $controlador->inputs->inm_co_acreditado->nombre_empresa; ?>
                             <?php echo $controlador->inputs->inm_co_acreditado->nrp; ?>
                             <?php echo $controlador->inputs->inm_co_acreditado->numero_nep; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_7">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_8; ?>
@@ -157,7 +186,11 @@
                             <!-- Contacto -->
                             <?php echo $controlador->inputs->conyuge->telefono_casa; ?>
                             <?php echo $controlador->inputs->conyuge->telefono_celular; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_8">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_9; ?>
@@ -167,7 +200,11 @@
                             <?php echo $controlador->inputs->beneficiario->nombre; ?>
                             <?php echo $controlador->inputs->beneficiario->apellido_paterno; ?>
                             <?php echo $controlador->inputs->beneficiario->apellido_materno; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_9">Modifica</button><br>
+                                </div>
+                            </div>
 
                             <div class="col-md-12 table-responsive gt_beneficiario_table">
                                 <table class="table table-striped">
@@ -214,7 +251,11 @@
                             <?php echo $controlador->inputs->referencia->calle; ?>
                             <?php echo $controlador->inputs->referencia->numero_exterior; ?>
                             <?php echo $controlador->inputs->referencia->numero_interior; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_10">Modifica</button><br>
+                                </div>
+                            </div>
 
                             <div class="col-md-12 table-responsive">
                                 <table class="table table-striped">
@@ -256,7 +297,11 @@
                             <?php echo $controlador->inputs->calle; ?>
                             <?php echo $controlador->inputs->numero_exterior; ?>
                             <?php echo $controlador->inputs->numero_interior; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_11">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
 
                         <?php echo $controlador->header_frontend->apartado_12; ?>
@@ -264,7 +309,11 @@
                             <?php echo $controlador->inputs->nss_extra; ?>
                             <?php echo $controlador->inputs->correo_mi_cuenta_infonavit; ?>
                             <?php echo $controlador->inputs->password_mi_cuenta_infonavit; ?>
-                            <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                            <div class="control-group btn-modifica">
+                                <div class="controls">
+                                    <button type="submit" class="btn btn-success" name="apartado_retorno" value="apartado_12">Modifica</button><br>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
