@@ -793,17 +793,29 @@ class _inm_prospecto{
      * @return array
      * @version 2.266.2
      */
-    public function integra_keys_selects_comercial(controlador_inm_prospecto|controlador_inm_prospecto_ubicacion $controlador, array $keys_selects): array
+    public function integra_keys_selects_comercial(
+        controlador_inm_prospecto|controlador_inm_prospecto_ubicacion $controlador,
+        array $keys_selects
+    ): array
     {
         $keys = array('com_agente_id','com_tipo_prospecto_id','com_medio_prospeccion_id', 'com_prospecto_id',
             'inm_tipo_venta_id');
-        $valida = $this->validacion->valida_ids(keys: $keys,registro:  $controlador->registro);
+        $valida = $this->validacion
+            ->valida_ids(
+                keys: $keys,
+                registro: $controlador->registro
+            );
         if(errores::$error){
-            return $this->error->error(mensaje: 'Error al valida controlador registro',data:  $valida);
+            return $this->error->error(
+                mensaje: 'Error al valida controlador registro',
+                data:  $valida
+            );
         }
 
-        $com_agente = (new com_agente($controlador->link))->filtro_and(
-            filtro: array('adm_usuario.id'=>$_SESSION['usuario_id']));
+        $com_agente = (new com_agente($controlador->link))
+            ->filtro_and(
+                filtro: array('adm_usuario.id'=>$_SESSION['usuario_id'])
+            );
         if(errores::$error){
             $error = (new errores())->error(mensaje: 'Error al obtener adm_usuario ',data:  $com_agente);
             print_r($error);
@@ -814,17 +826,31 @@ class _inm_prospecto{
         if($com_agente->n_registros > 0){
             $agente = $com_agente->registros[0];
 
-            $tipos_agente = ['PREDETERMINADO','GERENTE VENTAS','VENDEDOR', 'PROSPECTADOR', 'GERENTE PROSPECCION'];
+            $tipos_agente = [
+                'PREDETERMINADO',
+                'VENDEDOR',
+                'PROSPECTADOR',
+                'GERENTE PROSPECCION'
+            ];
             if (in_array($agente['com_tipo_agente_descripcion'], $tipos_agente, true)) {
                 $filtro['com_agente.id'] =  $controlador->registro['com_agente_id'];
             }
         }
 
-        $keys_selects = $this->keys_selects_comercial(controlador: $controlador,filtro: $filtro,
-            keys_selects:  $keys_selects);
+        $keys_selects = $this
+            ->keys_selects_comercial(
+                controlador: $controlador,
+                filtro: $filtro,
+                keys_selects:  $keys_selects
+            );
         if(errores::$error){
-            return $this->error->error(mensaje: 'Error al maquetar key_selects',data:  $keys_selects);
+            return $this->error
+                ->error(
+                    mensaje: 'Error al maquetar key_selects',
+                    data:  $keys_selects
+                );
         }
+
         return $keys_selects;
     }
 
