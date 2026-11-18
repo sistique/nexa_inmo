@@ -5,6 +5,17 @@ let session_id = getParameterByName('session_id');
 let pestana_general_actual = getParameterByName('pestana_general_actual');
 let pestana_actual = getParameterByName('pestana_actual');
 
+function desplazaAlApartado() {
+    if (!/^#apartado_(?:[1-9]|1[0-2])$/.test(window.location.hash)) {
+        return;
+    }
+
+    const apartado = document.getElementById(window.location.hash.slice(1));
+    if (apartado && apartado.getClientRects().length > 0) {
+        apartado.scrollIntoView();
+    }
+}
+
 /***** Pestañas *****/
 function cambiarPestannaGeneral(pestannas,pestanna,pentannascontenido) {
     pestanna_act = document.getElementById(pestanna.id);
@@ -146,6 +157,7 @@ function cambiarPestanna_inicialprospecto(pestannas) {
         url.searchParams.set("pestana_actual", pestanna_ini);
 
         window.history.pushState({}, '', url);
+        window.requestAnimationFrame(desplazaAlApartado);
     });
 }
 
@@ -617,6 +629,7 @@ function inicializa_estado_civil(){
                 collapse_a8.off("click").click(function () {
                     apartado_8.toggle();
                 });
+                desplazaAlApartado();
             }else{
                 apartado_8.hide();
                 collapse_a8.off("click");
