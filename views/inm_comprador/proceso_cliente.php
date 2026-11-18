@@ -1,5 +1,6 @@
 <?php /** @var  gamboamartin\inmuebles\controllers\controlador_inm_cliente $controlador  controlador en ejecucion */ ?>
 <?php use config\views; ?>
+<script src="./js/retorno_apartado.js" defer></script>
 
 <main class="main section-color-primary">
     <div >
@@ -38,6 +39,7 @@
                                 <div class="conten" id="cpestanacliente1">
                                     <form method="post" action="<?php echo $controlador->link_modifica_bd; ?>" class="form-additional"
                                           enctype="multipart/form-data">
+                                        <?php echo $controlador->inputs->btn_action_next; ?>
                                     <?php echo $controlador->header_frontend->apartado_1; ?>
 
                                     <div  id="apartado_1">
@@ -52,7 +54,11 @@
                                         <?php echo $controlador->inputs->inm_destino_credito_id; ?>
                                         <?php echo $controlador->inputs->es_segundo_credito; ?>
                                         <?php echo $controlador->inputs->inm_plazo_credito_sc_id; ?>
-                                        <?php echo $controlador->btn; ?>
+                                        <div class="control-group btn-modifica">
+                                            <div class="controls">
+                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_1">Modifica</button><br>
+                                            </div>
+                                        </div>
                                     </div>
 
 
@@ -96,7 +102,11 @@
                                         <?php echo $controlador->inputs->calle; ?>
                                         <?php echo $controlador->inputs->numero_exterior; ?>
                                         <?php echo $controlador->inputs->numero_interior; ?>
-                                        <?php echo $controlador->btn; ?>
+                                        <div class="control-group btn-modifica">
+                                            <div class="controls">
+                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_2">Modifica</button><br>
+                                            </div>
+                                        </div>
 
                                     </div>
 
@@ -111,7 +121,11 @@
                                         <?php echo $controlador->inputs->monto_final; ?>
                                         <?php echo $controlador->inputs->descuento; ?>
                                         <?php echo $controlador->inputs->puntos; ?>
-                                        <?php echo $controlador->btn; ?>
+                                        <div class="control-group btn-modifica">
+                                            <div class="controls">
+                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_3">Modifica</button><br>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <?php echo $controlador->header_frontend->apartado_4; ?>
@@ -120,7 +134,11 @@
                                         <?php echo $controlador->inputs->con_discapacidad; ?>
                                         <?php echo $controlador->inputs->inm_tipo_discapacidad_id; ?>
                                         <?php echo $controlador->inputs->inm_persona_discapacidad_id; ?>
-                                        <?php echo $controlador->btn; ?>
+                                        <div class="control-group btn-modifica">
+                                            <div class="controls">
+                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_4">Modifica</button><br>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <?php echo $controlador->header_frontend->apartado_5; ?>
@@ -134,7 +152,11 @@
                                         <?php echo $controlador->inputs->area_empresa; ?>
                                         <?php echo $controlador->inputs->inm_sindicato_id; ?>
                                         <?php echo $controlador->inputs->direccion_empresa; ?>
-                                        <?php echo $controlador->btn; ?>
+                                        <div class="control-group btn-modifica">
+                                            <div class="controls">
+                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_5">Modifica</button><br>
+                                            </div>
+                                        </div>
 
                                     </div>
 
@@ -152,7 +174,11 @@
                                             <?php echo $controlador->inputs->inm_co_acreditado->genero; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->numero_credito; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->adeudo_hipoteca; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_6">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_7; ?>
@@ -160,7 +186,11 @@
                                             <?php echo $controlador->inputs->inm_co_acreditado->nombre_empresa; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->nrp; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->numero_nep; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_7">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
                                         <?php echo $controlador->header_frontend->apartado_8; ?>
                                         <div  id="apartado_8">
@@ -181,7 +211,11 @@
                                             <!-- Contacto -->
                                             <?php echo $controlador->inputs->conyuge->telefono_casa; ?>
                                             <?php echo $controlador->inputs->conyuge->telefono_celular;  ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_8">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_9; ?>
@@ -191,7 +225,11 @@
                                             <?php echo $controlador->inputs->beneficiario->nombre; ?>
                                             <?php echo $controlador->inputs->beneficiario->apellido_paterno; ?>
                                             <?php echo $controlador->inputs->beneficiario->apellido_materno; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_9">Modifica</button><br>
+                                                </div>
+                                            </div>
                                             <div class="col-md-12 table-responsive">
                                                 <table class="table table-striped">
                                                     <thead>
@@ -240,7 +278,11 @@
                                             <?php echo $controlador->inputs->referencia->calle; ?>
                                             <?php echo $controlador->inputs->referencia->numero_exterior; ?>
                                             <?php echo $controlador->inputs->referencia->numero_interior; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_10">Modifica</button><br>
+                                                </div>
+                                            </div>
 
                                             <div class="col-md-12 table-responsive">
                                                 <table class="table table-striped">
@@ -283,13 +325,21 @@
                                             <?php echo $controlador->inputs->cat_sat_uso_cfdi_id; ?>
                                             <?php echo $controlador->inputs->cat_sat_tipo_persona_id; ?>
                                             <?php echo $controlador->inputs->bn_cuenta_id; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_11">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_12; ?>
                                         <div  id="apartado_12">
                                             <?php echo $controlador->inputs->com_tipo_cliente_id; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_12">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
                                      </form>
                                  </div>
@@ -477,9 +527,11 @@
                                 <div class="conten" id="cpestana1">
                                     <form method="post" action="<?php echo $controlador->link_modifica_bd; ?>" class="form-additional"
                                           enctype="multipart/form-data">
+                                        <?php echo $controlador->inputs->btn_action_next; ?>
+                                        <input type="hidden" name="params[pestana_general_actual]" value="pestanageneral2">
                                         <?php echo $controlador->header_frontend->apartado_1; ?>
 
-                                        <div  id="apartado_1">
+                                        <div  id="apartado_etapa_1">
                                             <?php echo $controlador->inputs->org_sucursal_id; ?>
                                             <?php echo $controlador->inputs->com_agente_id; ?>
                                             <?php echo $controlador->inputs->com_agente_cerrador_id; ?>
@@ -491,13 +543,17 @@
                                             <?php echo $controlador->inputs->inm_destino_credito_id; ?>
                                             <?php echo $controlador->inputs->es_segundo_credito; ?>
                                             <?php echo $controlador->inputs->inm_plazo_credito_sc_id; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_1">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
 
                                         <?php echo $controlador->header_frontend->apartado_2; ?>
 
-                                        <div  id="apartado_2">
+                                        <div  id="apartado_etapa_2">
                                             <!-- Identificadores -->
                                             <?php echo $controlador->inputs->nss; ?>
                                             <?php echo $controlador->inputs->curp; ?>
@@ -535,13 +591,17 @@
                                             <?php echo $controlador->inputs->calle; ?>
                                             <?php echo $controlador->inputs->numero_exterior; ?>
                                             <?php echo $controlador->inputs->numero_interior; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_2">Modifica</button><br>
+                                                </div>
+                                            </div>
 
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_3; ?>
 
-                                        <div  id="apartado_3">
+                                        <div  id="apartado_etapa_3">
                                             <?php echo $controlador->inputs->descuento_pension_alimenticia_dh; ?>
                                             <?php echo $controlador->inputs->descuento_pension_alimenticia_fc; ?>
                                             <?php echo $controlador->inputs->monto_credito_solicitado_dh; ?>
@@ -550,21 +610,29 @@
                                             <?php echo $controlador->inputs->monto_final; ?>
                                             <?php echo $controlador->inputs->descuento; ?>
                                             <?php echo $controlador->inputs->puntos; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_3">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_4; ?>
 
-                                        <div  id="apartado_4">
+                                        <div  id="apartado_etapa_4">
                                             <?php echo $controlador->inputs->con_discapacidad; ?>
                                             <?php echo $controlador->inputs->inm_tipo_discapacidad_id; ?>
                                             <?php echo $controlador->inputs->inm_persona_discapacidad_id; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_4">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_5; ?>
 
-                                        <div  id="apartado_5">
+                                        <div  id="apartado_etapa_5">
                                             <?php echo $controlador->inputs->nombre_empresa_patron; ?>
                                             <?php echo $controlador->inputs->nrp_nep; ?>
                                             <?php echo $controlador->inputs->numero_nep; ?>
@@ -573,11 +641,15 @@
                                             <?php echo $controlador->inputs->area_empresa; ?>
                                             <?php echo $controlador->inputs->inm_sindicato_id; ?>
                                             <?php echo $controlador->inputs->direccion_empresa; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_5">Modifica</button><br>
+                                                </div>
+                                            </div>
 
                                         </div>
                                         <?php echo $controlador->header_frontend->apartado_6; ?>
-                                        <div  id="apartado_6">
+                                        <div  id="apartado_etapa_6">
                                             <?php echo $controlador->inputs->inm_co_acreditado->nss; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->curp; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->rfc; ?>
@@ -590,19 +662,27 @@
                                             <?php echo $controlador->inputs->inm_co_acreditado->genero; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->numero_credito; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->adeudo_hipoteca; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_6">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_7; ?>
-                                        <div  id="apartado_7">
+                                        <div  id="apartado_etapa_7">
                                             <?php echo $controlador->inputs->inm_co_acreditado->nombre_empresa; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->nrp; ?>
                                             <?php echo $controlador->inputs->inm_co_acreditado->numero_nep; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_7">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_8; ?>
-                                        <div  id="apartado_8">
+                                        <div  id="apartado_etapa_8">
                                             <!-- Identificadores -->
                                             <?php echo $controlador->inputs->conyuge->curp; ?>
                                             <?php echo $controlador->inputs->conyuge->rfc; ?>
@@ -620,17 +700,25 @@
                                             <!-- Contacto -->
                                             <?php echo $controlador->inputs->conyuge->telefono_casa; ?>
                                             <?php echo $controlador->inputs->conyuge->telefono_celular;  ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_8">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_9; ?>
-                                        <div  id="apartado_9">
+                                        <div  id="apartado_etapa_9">
                                             <?php echo $controlador->inputs->beneficiario->inm_tipo_beneficiario_id; ?>
                                             <?php echo $controlador->inputs->beneficiario->inm_parentesco_id; ?>
                                             <?php echo $controlador->inputs->beneficiario->nombre; ?>
                                             <?php echo $controlador->inputs->beneficiario->apellido_paterno; ?>
                                             <?php echo $controlador->inputs->beneficiario->apellido_materno; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_9">Modifica</button><br>
+                                                </div>
+                                            </div>
                                             <div class="col-md-12 table-responsive">
                                                 <table class="table table-striped">
                                                     <thead>
@@ -665,7 +753,7 @@
 
 
                                         <?php echo $controlador->header_frontend->apartado_10; ?>
-                                        <div  id="apartado_10">
+                                        <div  id="apartado_etapa_10">
                                             <?php echo $controlador->inputs->referencia->nombre; ?>
                                             <?php echo $controlador->inputs->referencia->apellido_paterno; ?>
                                             <?php echo $controlador->inputs->referencia->apellido_materno; ?>
@@ -679,7 +767,11 @@
                                             <?php echo $controlador->inputs->referencia->calle; ?>
                                             <?php echo $controlador->inputs->referencia->numero_exterior; ?>
                                             <?php echo $controlador->inputs->referencia->numero_interior; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_10">Modifica</button><br>
+                                                </div>
+                                            </div>
 
                                             <div class="col-md-12 table-responsive">
                                                 <table class="table table-striped">
@@ -714,7 +806,7 @@
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_11; ?>
-                                        <div  id="apartado_11">
+                                        <div  id="apartado_etapa_11">
                                             <?php echo $controlador->inputs->cat_sat_regimen_fiscal_id; ?>
                                             <?php echo $controlador->inputs->cat_sat_moneda_id; ?>
                                             <?php echo $controlador->inputs->cat_sat_forma_pago_id; ?>
@@ -722,13 +814,21 @@
                                             <?php echo $controlador->inputs->cat_sat_uso_cfdi_id; ?>
                                             <?php echo $controlador->inputs->cat_sat_tipo_persona_id; ?>
                                             <?php echo $controlador->inputs->bn_cuenta_id; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_11">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <?php echo $controlador->header_frontend->apartado_12; ?>
-                                        <div  id="apartado_12">
+                                        <div  id="apartado_etapa_12">
                                             <?php echo $controlador->inputs->com_tipo_cliente_id; ?>
-                                            <?php echo $controlador->btn; ?>
+                                            <div class="control-group btn-modifica">
+                                                <div class="controls">
+                                                    <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_etapa_12">Modifica</button><br>
+                                                </div>
+                                            </div>
                                         </div>
 
 

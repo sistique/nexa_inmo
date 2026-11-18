@@ -822,7 +822,7 @@ let apartado_5 = $("#apartado_5");
 let apartado_6 = $("#apartado_6");
 let apartado_7 = $("#apartado_7");
 let apartado_8 = $("#apartado_8");
-let apartado_9 = $("#apartado_8");
+let apartado_9 = $("#apartado_9");
 
 let collapse_a1 = $("#collapse_a1");
 let collapse_a2 = $("#collapse_a2");
@@ -832,7 +832,7 @@ let collapse_a5 = $("#collapse_a5");
 let collapse_a6 = $("#collapse_a6");
 let collapse_a7 = $("#collapse_a7");
 let collapse_a8 = $("#collapse_a8");
-let collapse_a9 = $("#collapse_a8");
+let collapse_a9 = $("#collapse_a9");
 
 apartado_1.show();
 apartado_2.show();
@@ -923,12 +923,12 @@ function inicializa_co_acreditado(){
         url: 'index.php?seccion=inm_tipo_credito&accion=get_tipo_credito&ws=1&session_id='+session_id,
         success: function(data_r) {
             if(data_r.inm_tipo_credito_muestra_conyuge === "activo"){
-                apartado_6.toggle();
+                apartado_6.show();
                 collapse_a6.off("click").click(function () {
                     apartado_6.toggle();
                 });
 
-                apartado_7.toggle();
+                apartado_7.show();
                 collapse_a7.off("click").click(function () {
                     apartado_7.toggle();
                 });

@@ -1,5 +1,6 @@
 <?php /** @var  gamboamartin\inmuebles\controllers\controlador_inm_prospecto_ubicacion $controlador  controlador en ejecucion */ ?>
 <?php use config\views; ?>
+<script src="./js/retorno_apartado.js" defer></script>
 
 <main class="main section-color-primary">
     <div>
@@ -35,6 +36,9 @@
                                             <div class="widget  widget-box box-container form-main widget-form-cart cont_completo" id="form">
                                                 <form method="post" action="<?php echo $controlador->link_modifica_bd; ?>" class="form-additional"
                                                       enctype="multipart/form-data">
+                                                    <?php echo $controlador->inputs->btn_action_next; ?>
+                                                    <?php echo $controlador->inputs->id_retorno; ?>
+                                                    <?php echo $controlador->inputs->seccion_retorno; ?>
 
                                                     <?php echo $controlador->header_frontend->apartado_1; ?>
                                                     <div id="apartado_1">
@@ -53,7 +57,11 @@
                                                         <?php echo $controlador->inputs->rfc; ?>
 
                                                         <?php echo $controlador->inputs->observaciones; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_1">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_2; ?>
@@ -104,7 +112,11 @@
                                                         <?php echo $controlador->inputs->url; ?>
                                                         <?php echo $controlador->inputs->longitud; ?>
                                                         <?php echo $controlador->inputs->latitud; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_2">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_3; ?>
@@ -119,7 +131,11 @@
                                                         <?php echo $controlador->inputs->correo_mi_cuenta_infonavit; ?>
                                                         <?php echo $controlador->inputs->password_mi_cuenta_infonavit; ?>
                                                         <?php echo $controlador->inputs->estimacion_avaluo; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_3">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_4; ?>
@@ -140,7 +156,11 @@
                                                         <?php echo $controlador->inputs->numero_com; ?>
                                                         <?php echo $controlador->inputs->cel_com; ?>
                                                         <?php echo $controlador->inputs->correo_com; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_4">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_5; ?>
@@ -151,7 +171,11 @@
                                                         <?php echo $controlador->inputs->adeudo_agua; ?>
                                                         <?php echo $controlador->inputs->cuenta_luz; ?>
                                                         <?php echo $controlador->inputs->adeudo_luz; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_5">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_6; ?>
@@ -174,7 +198,11 @@
 
                                                         <?php echo $controlador->inputs->inm_co_acreditado->numero_credito; ?>
                                                         <?php echo $controlador->inputs->inm_co_acreditado->adeudo_hipoteca; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_6">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_7; ?>
@@ -182,7 +210,11 @@
                                                         <?php echo $controlador->inputs->inm_co_acreditado->nombre_empresa; ?>
                                                         <?php echo $controlador->inputs->inm_co_acreditado->nrp; ?>
                                                         <?php echo $controlador->inputs->inm_co_acreditado->numero_nep; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_7">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_8; ?>
@@ -207,10 +239,11 @@
                                                         <?php echo $controlador->inputs->conyuge->telefono_casa; ?>
                                                         <?php echo $controlador->inputs->conyuge->telefono_celular; ?>
 
-                                                        <?php echo $controlador->inputs->btn_action_next; ?>
-                                                        <?php echo $controlador->inputs->id_retorno; ?>
-                                                        <?php echo $controlador->inputs->seccion_retorno; ?>
-                                                        <?php include (new views())->ruta_templates . 'botons/submit/modifica_bd.php'; ?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_8">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <?php echo $controlador->header_frontend->apartado_9; ?>
@@ -224,7 +257,11 @@
                                                         <?php echo $controlador->inputs->numero_interior_fiscal; ?>
 
 
-                                                        <?php include (new views())->ruta_templates.'botons/submit/modifica_bd.php';?>
+                                                        <div class="control-group btn-modifica">
+                                                            <div class="controls">
+                                                                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_9">Modifica</button><br>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </form>
                                             </div>
@@ -444,5 +481,4 @@
         <img class="imagen_modal">
     </div>
 </div>
-
 

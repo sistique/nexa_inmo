@@ -1,5 +1,6 @@
 <?php /** @var  gamboamartin\facturacion\controllers\controlador_fc_docto_relacionado $controlador  controlador en ejecucion */ ?>
 <?php use config\views; ?>
+<script src="./js/retorno_apartado.js" defer></script>
 
 <?php echo $controlador->buttons['btn_collapse_all']; ?>
 
@@ -17,7 +18,11 @@
         <?php echo $controlador->inputs->inm_destino_credito_id; ?>
         <?php echo $controlador->inputs->es_segundo_credito; ?>
         <?php echo $controlador->inputs->inm_plazo_credito_sc_id; ?>
-        <?php echo $controlador->btn; ?>
+        <div class="control-group btn-modifica">
+            <div class="controls">
+                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_1">Modifica</button><br>
+            </div>
+        </div>
     </div>
 
 
@@ -62,7 +67,11 @@
         <?php echo $controlador->inputs->calle; ?>
         <?php echo $controlador->inputs->numero_exterior; ?>
         <?php echo $controlador->inputs->numero_interior; ?>
-        <?php echo $controlador->btn; ?>
+        <div class="control-group btn-modifica">
+            <div class="controls">
+                <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_2">Modifica</button><br>
+            </div>
+        </div>
 
     </div>
 
@@ -77,7 +86,11 @@
 <?php echo $controlador->inputs->monto_final; ?>
 <?php echo $controlador->inputs->descuento; ?>
 <?php echo $controlador->inputs->puntos; ?>
-<?php echo $controlador->btn; ?>
+<div class="control-group btn-modifica">
+    <div class="controls">
+        <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_3">Modifica</button><br>
+    </div>
+</div>
     </div>
 
 
@@ -87,7 +100,11 @@
 <?php echo $controlador->inputs->con_discapacidad; ?>
 <?php echo $controlador->inputs->inm_tipo_discapacidad_id; ?>
 <?php echo $controlador->inputs->inm_persona_discapacidad_id; ?>
-<?php echo $controlador->btn; ?>
+<div class="control-group btn-modifica">
+    <div class="controls">
+        <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_4">Modifica</button><br>
+    </div>
+</div>
     </div>
 
 <?php echo $controlador->header_frontend->apartado_5; ?>
@@ -103,7 +120,11 @@
 <?php echo $controlador->inputs->inm_sindicato_id; ?>
 <?php echo $controlador->inputs->direccion_empresa; ?>
 
-<?php echo $controlador->btn; ?>
+<div class="control-group btn-modifica">
+    <div class="controls">
+        <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_5">Modifica</button><br>
+    </div>
+</div>
 
     </div>
 
@@ -122,7 +143,11 @@
     <?php echo $controlador->inputs->inm_co_acreditado->genero; ?>
     <?php echo $controlador->inputs->inm_co_acreditado->numero_credito; ?>
     <?php echo $controlador->inputs->inm_co_acreditado->adeudo_hipoteca; ?>
-    <?php echo $controlador->btn; ?>
+    <div class="control-group btn-modifica">
+        <div class="controls">
+            <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_6">Modifica</button><br>
+        </div>
+    </div>
 
 </div>
 
@@ -131,7 +156,11 @@
     <?php echo $controlador->inputs->inm_co_acreditado->nombre_empresa; ?>
     <?php echo $controlador->inputs->inm_co_acreditado->nrp; ?>
     <?php echo $controlador->inputs->inm_co_acreditado->numero_nep; ?>
-    <?php echo $controlador->btn; ?>
+    <div class="control-group btn-modifica">
+        <div class="controls">
+            <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_7">Modifica</button><br>
+        </div>
+    </div>
 </div>
 
 <?php echo $controlador->header_frontend->apartado_8; ?>
@@ -155,7 +184,11 @@
     <!-- Contacto -->
     <?php echo $controlador->inputs->conyuge->telefono_casa; ?>
     <?php echo $controlador->inputs->conyuge->telefono_celular;  ?>
-    <?php echo $controlador->btn; ?>
+    <div class="control-group btn-modifica">
+        <div class="controls">
+            <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_8">Modifica</button><br>
+        </div>
+    </div>
 </div>
 
 <?php echo $controlador->header_frontend->apartado_9; ?>
@@ -165,7 +198,11 @@
     <?php echo $controlador->inputs->beneficiario->nombre; ?>
     <?php echo $controlador->inputs->beneficiario->apellido_paterno; ?>
     <?php echo $controlador->inputs->beneficiario->apellido_materno; ?>
-    <?php echo $controlador->btn; ?>
+    <div class="control-group btn-modifica">
+        <div class="controls">
+            <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_9">Modifica</button><br>
+        </div>
+    </div>
     <div class="col-md-12 table-responsive">
         <table class="table table-striped">
             <thead>
@@ -213,7 +250,11 @@
     <?php echo $controlador->inputs->referencia->calle; ?>
     <?php echo $controlador->inputs->referencia->numero_exterior; ?>
     <?php echo $controlador->inputs->referencia->numero_interior; ?>
-    <?php echo $controlador->btn; ?>
+    <div class="control-group btn-modifica">
+        <div class="controls">
+            <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_10">Modifica</button><br>
+        </div>
+    </div>
 
     <div class="col-md-12 table-responsive">
         <table class="table table-striped">
@@ -245,22 +286,31 @@
             </tbody>
         </table>
     </div>
-    <?php echo $controlador->header_frontend->apartado_11; ?>
-    <div  id="apartado_11">
-        <?php echo $controlador->inputs->cat_sat_regimen_fiscal_id; ?>
-        <?php echo $controlador->inputs->cat_sat_moneda_id; ?>
-        <?php echo $controlador->inputs->cat_sat_forma_pago_id; ?>
-        <?php echo $controlador->inputs->cat_sat_metodo_pago_id; ?>
-        <?php echo $controlador->inputs->cat_sat_uso_cfdi_id; ?>
-        <?php echo $controlador->inputs->cat_sat_tipo_persona_id; ?>
-        <?php echo $controlador->inputs->bn_cuenta_id; ?>
-        <?php echo $controlador->btn; ?>
-    </div>
+</div>
 
-    <?php echo $controlador->header_frontend->apartado_12; ?>
-    <div  id="apartado_12">
-        <?php echo $controlador->inputs->com_tipo_cliente_id; ?>
-        <?php echo $controlador->btn; ?>
+<?php echo $controlador->header_frontend->apartado_11; ?>
+<div  id="apartado_11">
+    <?php echo $controlador->inputs->cat_sat_regimen_fiscal_id; ?>
+    <?php echo $controlador->inputs->cat_sat_moneda_id; ?>
+    <?php echo $controlador->inputs->cat_sat_forma_pago_id; ?>
+    <?php echo $controlador->inputs->cat_sat_metodo_pago_id; ?>
+    <?php echo $controlador->inputs->cat_sat_uso_cfdi_id; ?>
+    <?php echo $controlador->inputs->cat_sat_tipo_persona_id; ?>
+    <?php echo $controlador->inputs->bn_cuenta_id; ?>
+    <div class="control-group btn-modifica">
+        <div class="controls">
+            <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_11">Modifica</button><br>
+        </div>
+    </div>
+</div>
+
+<?php echo $controlador->header_frontend->apartado_12; ?>
+<div  id="apartado_12">
+    <?php echo $controlador->inputs->com_tipo_cliente_id; ?>
+    <div class="control-group btn-modifica">
+        <div class="controls">
+            <button type="submit" class="btn btn-success modifica" name="apartado_retorno" value="apartado_12">Modifica</button><br>
+        </div>
     </div>
 </div>
 

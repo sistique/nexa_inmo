@@ -453,11 +453,23 @@ apartado_2.show();
 apartado_3.show();
 apartado_4.show();
 apartado_5.show();
-apartado_6.show();
-apartado_7.show();
+if (window.location.hash === '#apartado_6') {
+    apartado_6.show();
+} else {
+    apartado_6.toggle();
+}
+if (window.location.hash === '#apartado_7') {
+    apartado_7.show();
+} else {
+    apartado_7.toggle();
+}
 apartado_8.show();
 apartado_9.show();
-apartado_10.show();
+if (window.location.hash === '#apartado_10') {
+    apartado_10.show();
+} else {
+    apartado_10.toggle();
+}
 apartado_11.show();
 apartado_12.show();
 in_descuento_pension_alimenticia_dh.change(function() {
@@ -840,12 +852,12 @@ function inicializa_conyuge(){
         url: 'index.php?seccion=inm_tipo_credito&accion=get_tipo_credito&ws=1&session_id='+session_id,
         success: function(data_r) {
             if(data_r.inm_tipo_credito_muestra_conyuge === "activo"){
-                apartado_6.toggle();
+                apartado_6.show();
                 collapse_a6.off("click").click(function () {
                     apartado_6.toggle();
                 });
 
-                apartado_7.toggle();
+                apartado_7.show();
                 collapse_a7.off("click").click(function () {
                     apartado_7.toggle();
                 });
@@ -925,7 +937,7 @@ function inicializa_estado_civil(){
         url: 'index.php?seccion=inm_estado_civil&accion=get_estado_civil&ws=1&session_id='+session_id,
         success: function(data_r) {
             if(data_r.adm_estado_civil_descripcion === "CASADO"){
-                apartado_10.toggle();
+                apartado_10.show();
                 collapse_a10.off("click").click(function () {
                     apartado_10.toggle();
                 });
@@ -1275,7 +1287,6 @@ function dp_asigna_municipios(dp_estado_id = '',dp_municipio_id = '', name_selec
     });
 
 }
-
 
 
 
