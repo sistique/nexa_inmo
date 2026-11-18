@@ -239,7 +239,13 @@ class controlador_inm_comprador extends _ctl_base {
     public string $button_inm_doc_comprador_vista_previa_escritura = '';
     public string $button_inm_doc_comprador_elimina_bd_escritura = '';
 
-
+    /* DOCUMENTO COTEJADO */
+    public string $descripcion_confirmacion_cotejo = '';
+    public string $button_inm_doc_comprador_descarga_confirmacion_cotejo = '';
+    public string $button_inm_doc_comprador_descarga_zip_confirmacion_cotejo = '';
+    public string $button_inm_doc_comprador_vista_previa_confirmacion_cotejo = '';
+    public string $button_inm_doc_comprador_elimina_bd_confirmacion_cotejo = '';
+    
     /* BOTON DE DESCARGA SOLICITUD INFONAVIT */
     public string $button_solicitud_infonavit = '';
 
@@ -1911,11 +1917,18 @@ class controlador_inm_comprador extends _ctl_base {
                 header: $header,ws:  $ws);
         }
 
-
         $base = $this->base_upd(keys_selects: $keys_selects, params: array(),params_ajustados: array());
         if(errores::$error){
             return $this->retorno_error(mensaje: 'Error al integrar base',data:  $base, header: $header,ws:  $ws);
         }
+
+        $documento_confirmacion_cotejo = $this->html->input_file(cols: 12,name: 'confirmacion_cotejo',
+            row_upd:  new stdClass(),value_vacio:  false, place_holder: 'Confirmacion Cotejo',required: false);
+        if(errores::$error){
+            return $this->retorno_error(
+                mensaje: 'Error al obtener inputs',data:  $documento_confirmacion_cotejo, header: $header,ws:  $ws);
+        }
+        $this->inputs->documento_confirmacion_cotejo = $documento_confirmacion_cotejo;
 
         $inm_comprador_id = $this->html->hidden(name:'inm_comprador_id',value: $this->registro_id);
         if(errores::$error){
@@ -1947,6 +1960,61 @@ class controlador_inm_comprador extends _ctl_base {
         }
 
         $this->link_cotejado_bd = $link_cotejado_bd;
+
+        $filtro_inm_doc['inm_comprador.id'] = $this->registro_id;
+        $filtro_inm_doc['doc_tipo_documento.id'] = 87;
+        $r_inm_doc_comprador = (new inm_doc_comprador(link: $this->link))->filtro_and(filtro: $filtro_inm_doc);
+        if(errores::$error){
+            return $this->retorno_error(mensaje: 'Error al integrar doc',data:  $r_inm_doc_comprador,
+                header: $header,ws:  $ws);
+        }
+
+        if($r_inm_doc_comprador->n_registros > 0) {
+            $this->descripcion_confirmacion_cotejo = 'Confirmacion Cotejo';
+
+            $button_inm_doc_comprador_descarga = $this->html->button_href(accion: 'descarga', etiqueta: 'Descarga',
+                registro_id: $r_inm_doc_comprador->registros[0]['inm_doc_comprador_id'],
+                seccion: 'inm_doc_comprador', style: 'success');
+            if (errores::$error) {
+                return $this->retorno_error(mensaje: 'Error al integrar button',
+                    data: $button_inm_doc_comprador_descarga, header: $header, ws: $ws);
+            }
+
+            $this->button_inm_doc_comprador_descarga_confirmacion_cotejo = $button_inm_doc_comprador_descarga;
+
+            $button_inm_doc_comprador_vista_previa = $this->html->button_href(accion: 'vista_previa',
+                etiqueta: 'Vista Previa', registro_id: $r_inm_doc_comprador->registros[0]['inm_doc_comprador_id'],
+                seccion: 'inm_doc_comprador', style: 'success');
+            if (errores::$error) {
+                return $this->retorno_error(mensaje: 'Error al integrar button',
+                    data: $button_inm_doc_comprador_vista_previa, header: $header, ws: $ws);
+            }
+
+            $this->button_inm_doc_comprador_vista_previa_confirmacion_cotejo = $button_inm_doc_comprador_vista_previa;
+
+            $button_inm_doc_comprador_descarga_zip = $this->html->button_href(accion: 'descarga_zip',
+                etiqueta: 'Descarga ZIP', registro_id: $r_inm_doc_comprador->registros[0]['inm_doc_comprador_id'],
+                seccion: 'inm_doc_comprador', style: 'success');
+            if (errores::$error) {
+                return $this->retorno_error(mensaje: 'Error al integrar button',
+                    data: $button_inm_doc_comprador_descarga_zip, header: $header, ws: $ws);
+            }
+
+            $this->button_inm_doc_comprador_descarga_zip_confirmacion_cotejo = $button_inm_doc_comprador_descarga_zip;
+
+            $params = array('accion_retorno'=>'proceso_cliente','seccion_retorno'=>'inm_comprador',
+                'id_retorno'=>$this->registro_id, 'pestana_general_actual' => 'pestanageneral2',
+                'pestana_actual' => 'pestana9');
+            $button_inm_doc_comprador_elimina_bd = $this->html->button_href(accion: 'elimina_bd',
+                etiqueta: 'Elimina', registro_id: $r_inm_doc_comprador->registros[0]['inm_doc_comprador_id'],
+                seccion: 'inm_doc_comprador', style: 'danger',params: $params);
+            if (errores::$error) {
+                return $this->retorno_error(mensaje: 'Error al integrar button', data: $button_inm_doc_comprador_elimina_bd,
+                    header: $header, ws: $ws);
+            }
+
+            $this->button_inm_doc_comprador_elimina_bd_confirmacion_cotejo = $button_inm_doc_comprador_elimina_bd;
+        }
 
         $this->keys_selects = array_merge($keys_selects, $this->keys_selects);
 
@@ -3592,6 +3660,30 @@ class controlador_inm_comprador extends _ctl_base {
             $this->link->rollBack();
             return $this->retorno_error(mensaje: 'Error el cliente ya esta cancelado',data:  $inm_bit_comp,
                 header: $header, ws: $ws);
+        }
+
+        $filtro_doc['inm_comprador.id'] = $this->registro_id;
+        $filtro_doc['doc_tipo_documento.id'] = 87;
+        $existe = (new inm_doc_comprador(link: $this->link))->existe(filtro: $filtro_doc);
+        if (errores::$error) {
+            $this->link->rollBack();
+            return $this->retorno_error(mensaje: 'Error al obtener datos de bitacora', data: $existe,
+                header: $header, ws: $ws);
+        }
+
+        if (!$existe) {
+            if (trim($_FILES['confirmacion_cotejo']['name']) !== '') {
+                $_FILES['documento'] = $_FILES['confirmacion_cotejo'];
+                $registro = array();
+                $registro['inm_comprador_id'] = $this->registro_id;
+                $registro['doc_tipo_documento_id'] = 87;
+                $r_inm_doc_comprador = (new inm_doc_comprador(link: $this->link))->alta_registro(registro: $registro);
+                if (errores::$error) {
+                    $this->link->rollBack();
+                    return $this->retorno_error(mensaje: 'Error al insertar datos', data: $r_inm_doc_comprador,
+                        header: $header, ws: $ws);
+                }
+            }
         }
 
         $filtro_exi['inm_comprador.id'] = $this->registro_id;

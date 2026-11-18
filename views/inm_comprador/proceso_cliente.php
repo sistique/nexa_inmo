@@ -1307,6 +1307,7 @@
                                     <form method="post" action="<?php echo $controlador->link_cotejado_bd; ?>"
                                           class="form-additional" enctype="multipart/form-data">
                                         <?php echo $controlador->inputs->inm_notaria_select_id; ?>
+                                        <?php echo $controlador->inputs->documento_confirmacion_cotejo; ?>
 
                                         <div class="control-group btn-alta">
                                             <div class="controls">
@@ -1314,6 +1315,25 @@
                                             </div>
                                         </div>
                                     </form>
+                                    <div class="row buttons-form">
+                                        <div class="col-lg-12">
+                                            <label class="label-docs">
+                                                <?php echo $controlador->descripcion_confirmacion_cotejo; ?>
+                                            </label>
+                                        </div>
+                                        <div class="col-lg-3">
+                                            <?php echo $controlador->button_inm_doc_comprador_descarga_confirmacion_cotejo; ?>
+                                        </div>
+                                        <div class="col-lg-3">
+                                            <?php echo $controlador->button_inm_doc_comprador_vista_previa_confirmacion_cotejo; ?>
+                                        </div>
+                                        <div class="col-lg-3">
+                                            <?php echo $controlador->button_inm_doc_comprador_descarga_zip_confirmacion_cotejo; ?>
+                                        </div>
+                                        <div class="col-lg-3">
+                                            <?php echo $controlador->button_inm_doc_comprador_elimina_bd_confirmacion_cotejo; ?>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="conten" id="cpestana10">
                                     <!--<form method="post" action="<?php //echo $controlador->link_cobrado_bd; ?>"
