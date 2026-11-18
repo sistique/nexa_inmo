@@ -3,6 +3,7 @@
 namespace gamboamartin\inmuebles\models;
 
 use base\orm\_modelo_parent;
+use config\generales;
 use gamboamartin\comercial\models\com_agente;
 use gamboamartin\comercial\models\com_tipo_prospecto;
 use gamboamartin\direccion_postal\models\dp_calle_pertenece;
@@ -11,8 +12,14 @@ use gamboamartin\direccion_postal\models\dp_municipio;
 use gamboamartin\errores\errores;
 use gamboamartin\proceso\models\pr_proceso;
 use PDO;
+use setasign\Fpdi\Fpdi;
+use setasign\Fpdi\PdfReader\PdfReaderException;
 use PhpOffice\PhpWord\TemplateProcessor;
 use stdClass;
+use Tomsgu\PdfMerger\Exception\FileNotFoundException;
+use Tomsgu\PdfMerger\Exception\InvalidArgumentException;
+use Tomsgu\PdfMerger\PdfCollection;
+use Tomsgu\PdfMerger\PdfMerger;
 
 
 class inm_ubicacion extends _inm_ubicaciones {
@@ -119,6 +126,145 @@ class inm_ubicacion extends _inm_ubicaciones {
 
         $this->modelo_etapa = new inm_ubicacion_etapa(link: $this->link);
 
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws PdfReaderException
+     * @throws InvalidArgumentException
+     */
+    public function agrupa_documentos(
+        int $inm_ubicacion_id,
+        array $doc_tipo_documentos_ids = array()
+    ): array|string|bool
+    {
+        $filtro_docs_ubicacion['inm_ubicacion.id'] = $inm_ubicacion_id;
+        $filtro_docs_ubicacion['doc_extension.descripcion'] = 'pdf';
+
+        $in = array();
+
+        if (count($doc_tipo_documentos_ids) > 0) {
+            $in = [
+                'llave' => 'doc_tipo_documento.id',
+                'values' => $doc_tipo_documentos_ids
+            ];
+        }
+
+        $docs_ubicacion = (new inm_doc_ubicacion(link: $this->link))
+            ->filtro_and(
+                filtro: $filtro_docs_ubicacion,
+                in: $in
+            );
+
+        if (errores::$error) {
+            return $this->error->error(
+                mensaje: 'Error al obtener documentos de la ubicación',
+                data: $docs_ubicacion
+            );
+        }
+
+        if ($docs_ubicacion->n_registros === 0) {
+            return false;
+        }
+
+        $ubicacion = $this->registro(registro_id: $inm_ubicacion_id, retorno_obj: true);
+        if (errores::$error) {
+            return $this->error->error(
+                mensaje: 'Error al obtener los datos del propietario de la ubicación',
+                data: $ubicacion
+            );
+        }
+
+        $nombre_titular = trim((string)($ubicacion->razon_social ?? ''));
+        if ($nombre_titular === '' || strtoupper($nombre_titular) === 'POR ASIGNAR') {
+            $nombre_titular = trim(implode(' ', array_filter([
+                trim((string)($ubicacion->nombre ?? '')),
+                trim((string)($ubicacion->apellido_paterno ?? '')),
+                trim((string)($ubicacion->apellido_materno ?? ''))
+            ])));
+        }
+        if ($nombre_titular === '') {
+            $nombre_titular = 'Propietario ' . $inm_ubicacion_id;
+        }
+
+        if (count($doc_tipo_documentos_ids) > 0) {
+            $documentos_por_tipo = array();
+
+            foreach ($docs_ubicacion->registros as $documento) {
+                $tipo_id = $documento->doc_tipo_documento_id;
+                $documentos_por_tipo[$tipo_id][] = $documento;
+            }
+
+            $documentos_ordenados = array();
+
+            foreach ($doc_tipo_documentos_ids as $tipo_id) {
+                if (!isset($documentos_por_tipo[$tipo_id])) {
+                    continue;
+                }
+
+                foreach ($documentos_por_tipo[$tipo_id] as $documento) {
+                    $documentos_ordenados[] = $documento;
+                }
+            }
+
+            $docs_ubicacion->registros = $documentos_ordenados;
+        }
+
+        $pdfCollection = new PdfCollection();
+        $generales = new generales();
+        $documentos = array();
+
+        foreach ($docs_ubicacion->registros as $documento) {
+            $ruta_doc = $generales->path_base . $documento->doc_documento_ruta_relativa;
+
+            if ($generales->guarda_archivo_dropbox) {
+                $guarda = (new _dropbox(link: $this->link))
+                    ->preview(
+                        dropbox_id: $documento->inm_dropbox_ruta_id_dropbox,
+                        extencion: $documento->doc_extension_descripcion
+                    );
+
+                if (errores::$error) {
+                    return $this->error->error(
+                        mensaje: 'Error al recuperar documento de Dropbox',
+                        data: $guarda
+                    );
+                }
+
+                $ruta_doc = $generales->path_base . $guarda->ruta_archivo;
+            }
+
+            if (!file_exists($ruta_doc) || !is_readable($ruta_doc)) {
+                return $this->error->error(
+                    mensaje: 'El archivo PDF no existe o no puede leerse',
+                    data: $ruta_doc
+                );
+            }
+
+            $documentos[] = $ruta_doc;
+            $pdfCollection->addPdf($ruta_doc);
+        }
+
+        $fpdi = new Fpdi();
+        $pdfMerger = new PdfMerger($fpdi);
+        $nombre_archivo = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nombre_titular);
+        if ($nombre_archivo === false) {
+            $nombre_archivo = $nombre_titular;
+        }
+        $nombre_archivo = preg_replace('/[^A-Za-z0-9 ._-]/', '', $nombre_archivo) ?? '';
+        $nombre_archivo = trim($nombre_archivo, " ._-");
+        if ($nombre_archivo === '') {
+            $nombre_archivo = 'Propietario ' . $inm_ubicacion_id;
+        }
+        $outputPath = 'EXPEDIENTE ' . $nombre_archivo . '.pdf';
+
+        $pdfMerger->merge(
+            $pdfCollection,
+            $outputPath,
+            PdfMerger::MODE_DOWNLOAD
+        );
+
+        return $documentos;
     }
 
     /**
@@ -1635,4 +1781,3 @@ class inm_ubicacion extends _inm_ubicaciones {
         exit;
     }
 }
-

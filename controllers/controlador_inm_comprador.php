@@ -3176,7 +3176,7 @@ class controlador_inm_comprador extends _ctl_base {
             $not_in = array();
             $not_in['llave'] = 'doc_tipo_documento.descripcion';
             $not_in['values'] = array('VIGENCIA INE', 'PODER ORIGINAL', 'CONTRATO PROMESA COMPRAVENTA',
-                'CANCELACION HIPOTECA', 'ESTADO DE CUENTA HISTORICO', 'INE ISR EXENTO', 'CNA AGUA', 'CNA PREDIAL');
+                'CANCELACION HIPOTECA', 'ESTADO DE CUENTA HISTORICO', 'ISR EXENTO', 'CNA AGUA', 'CNA PREDIAL');
             $inm_conf_docs_prospecto = (new inm_conf_docs_ubicacion(link: $this->link))->filtro_and(
                 filtro: $filtro_ubi, not_in: $not_in);
             if (errores::$error) {

@@ -3,12 +3,19 @@
 namespace gamboamartin\inmuebles\models;
 
 use base\orm\_modelo_parent;
+use config\generales;
 use gamboamartin\administrador\models\adm_usuario;
 use gamboamartin\comercial\models\com_agente;
 use gamboamartin\comercial\models\com_cliente;
 use gamboamartin\errores\errores;
 use PDO;
+use setasign\Fpdi\Fpdi;
+use setasign\Fpdi\PdfReader\PdfReaderException;
 use stdClass;
+use Tomsgu\PdfMerger\Exception\FileNotFoundException;
+use Tomsgu\PdfMerger\Exception\InvalidArgumentException;
+use Tomsgu\PdfMerger\PdfCollection;
+use Tomsgu\PdfMerger\PdfMerger;
 
 
 class inm_comprador extends _modelo_parent{
@@ -242,6 +249,154 @@ class inm_comprador extends _modelo_parent{
 
         $this->NAMESPACE = __NAMESPACE__;
         $this->etiqueta = 'Clientes';
+    }
+
+    /**
+     * @throws FileNotFoundException
+     * @throws PdfReaderException
+     * @throws InvalidArgumentException
+     */
+
+    public function agrupa_documentos(
+        int $inm_comprador_id,
+        array $doc_tipo_documentos_ids = array()
+    ): array|string|bool
+    {
+        $filtro_docs_cliente['inm_comprador.id'] = $inm_comprador_id;
+        $filtro_docs_cliente['doc_extension.descripcion'] = 'pdf';
+
+        $in = array();
+
+        if (count($doc_tipo_documentos_ids) > 0) {
+            $in = [
+                'llave' => 'doc_tipo_documento.id',
+                'values' => $doc_tipo_documentos_ids
+            ];
+        }
+
+        $docs_cliente = (new inm_doc_comprador(link: $this->link))
+            ->filtro_and(
+                filtro: $filtro_docs_cliente,
+                in: $in
+            );
+
+        if (errores::$error) {
+            return $this->error->error(
+                mensaje: 'Error al obtener documentos del comprador',
+                data: $docs_cliente
+            );
+        }
+
+        if ($docs_cliente->n_registros === 0) {
+            return false;
+        }
+
+        $comprador = $this->registro(registro_id: $inm_comprador_id, retorno_obj: true);
+        if (errores::$error) {
+            return $this->error->error(
+                mensaje: 'Error al obtener los datos del comprador',
+                data: $comprador
+            );
+        }
+
+        $nombre_titular = trim((string)($comprador->razon_social ?? ''));
+        if ($nombre_titular === '' || strtoupper($nombre_titular) === 'POR ASIGNAR') {
+            $nombre_titular = trim(implode(' ', array_filter([
+                trim((string)($comprador->nombre ?? '')),
+                trim((string)($comprador->apellido_paterno ?? '')),
+                trim((string)($comprador->apellido_materno ?? ''))
+            ])));
+        }
+        if ($nombre_titular === '') {
+            $nombre_titular = 'Cliente ' . $inm_comprador_id;
+        }
+
+        if (count($doc_tipo_documentos_ids) > 0) {
+
+            $documentos_por_tipo = array();
+
+            foreach ($docs_cliente->registros as $documento) {
+
+                $tipo_id = $documento->doc_tipo_documento_id;
+
+                $documentos_por_tipo[$tipo_id][] = $documento;
+            }
+
+            $documentos_ordenados = array();
+
+            foreach ($doc_tipo_documentos_ids as $tipo_id) {
+
+                if (!isset($documentos_por_tipo[$tipo_id])) {
+                    continue;
+                }
+
+                foreach ($documentos_por_tipo[$tipo_id] as $documento) {
+                    $documentos_ordenados[] = $documento;
+                }
+            }
+
+            $docs_cliente->registros = $documentos_ordenados;
+        }
+
+        $pdfCollection = new PdfCollection();
+        $generales = new generales();
+
+        $documentos = array();
+
+        foreach ($docs_cliente->registros as $documento) {
+
+            $ruta_doc = $generales->path_base . $documento->doc_documento_ruta_relativa;
+
+            if ($generales->guarda_archivo_dropbox) {
+                $guarda = (new _dropbox(link: $this->link))
+                    ->preview(
+                        dropbox_id: $documento->inm_dropbox_ruta_id_dropbox,
+                        extencion: $documento->doc_extension_descripcion
+                    );
+
+                if (errores::$error) {
+                    return $this->error->error(
+                        mensaje: 'Error al recuperar documento de Dropbox',
+                        data: $guarda
+                    );
+                }
+
+                $ruta_doc = $generales->path_base . $guarda->ruta_archivo;
+            }
+
+            if (!file_exists($ruta_doc) || !is_readable($ruta_doc)) {
+                return $this->error->error(
+                    mensaje: 'El archivo PDF no existe o no puede leerse',
+                    data: $ruta_doc
+                );
+            }
+
+            $documentos[] = $ruta_doc;
+
+            $pdfCollection->addPdf($ruta_doc);
+        }
+
+        $fpdi = new Fpdi();
+        $pdfMerger = new PdfMerger($fpdi);
+
+        $nombre_archivo = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nombre_titular);
+        if ($nombre_archivo === false) {
+            $nombre_archivo = $nombre_titular;
+        }
+        $nombre_archivo = preg_replace('/[^A-Za-z0-9 ._-]/', '', $nombre_archivo) ?? '';
+        $nombre_archivo = trim($nombre_archivo, " ._-");
+        if ($nombre_archivo === '') {
+            $nombre_archivo = 'Cliente ' . $inm_comprador_id;
+        }
+        $outputPath = 'EXPEDIENTE ' . $nombre_archivo . '.pdf';
+
+        $pdfMerger->merge(
+            $pdfCollection,
+            $outputPath,
+            PdfMerger::MODE_DOWNLOAD
+        );
+
+        return $documentos;
     }
 
     /**
