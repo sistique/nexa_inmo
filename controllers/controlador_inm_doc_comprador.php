@@ -307,10 +307,11 @@ class controlador_inm_doc_comprador extends _ctl_formato {
 
     private function name_doc(stdClass $registro): string
     {
-        $name = $registro->inm_comprador_id.".".$registro->inm_comprador_nombre;
-        $name .= ".".$registro->inm_comprador_apellido_paterno;
-        $name .= ".".$registro->inm_comprador_apellido_materno.".".$registro->doc_tipo_documento_codigo;
-        return $name;
+        $tipo_documento = trim((string)$registro->doc_tipo_documento_descripcion);
+
+        $nombre = trim((string)$registro->inm_comprador_razon_social);
+
+        return $tipo_documento !== '' ? $tipo_documento . ($nombre !== '' ? ' - ' . $nombre : '') : $nombre;
     }
 
     private function name_file(stdClass $registro): array|string

@@ -291,10 +291,15 @@ class controlador_inm_doc_prospecto_ubicacion extends _ctl_formato {
 
     private function name_doc(stdClass $registro): string
     {
-        $name = $registro->inm_prospecto_ubicacion_id.".".$registro->inm_prospecto_ubicacion_nombre;
-        $name .= ".".$registro->inm_prospecto_ubicacion_apellido_paterno;
-        $name .= ".".$registro->inm_prospecto_ubicacion_apellido_materno;
-        return $name;
+        $tipo_documento = trim((string)$registro->doc_tipo_documento_descripcion);
+
+        $nombre = implode(' ', array_filter([
+            $registro->inm_prospecto_ubicacion_nombre,
+            $registro->inm_prospecto_ubicacion_apellido_paterno,
+            $registro->inm_prospecto_ubicacion_apellido_materno
+        ], fn($campo) => trim((string)$campo) !== ''));
+
+        return $tipo_documento !== '' ? $tipo_documento . ($nombre !== '' ? ' - ' . $nombre : '') : $nombre;
     }
 
     private function name_file(stdClass $registro): array|string
