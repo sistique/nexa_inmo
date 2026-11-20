@@ -3148,7 +3148,10 @@ class controlador_inm_comprador extends _ctl_base {
             $filtro['inm_institucion_hipotecaria.id'] = $registro->registros[0]['inm_institucion_hipotecaria_id'];
             $not_in = array();
             $not_in['llave'] = 'doc_tipo_documento.descripcion';
-            $not_in['values'] = array('VIGENCIA INE', 'RELACIONES LABORALES', 'AFORE');
+            $not_in['values'] = array('VIGENCIA INE', 'RELACIONES LABORALES', 'AFORE','ESCRITURA', 'AVALUO',
+                'SIC', 'CONSTANCIA DE CREDITO', 'ANEXOS', 'INSTITUCION DE CREDITO', 'NOTIFICACION DE DESCUENTO',
+                'ISR NOTARIA', 'VALIDACION PODER', 'ACUSE DEL PATRON', 'SOLICITUD AVALUO FIRMADA',
+                'CONFIRMACION COTEJO');
             $inm_conf_docs_comprador = (new inm_conf_docs_comprador(link: $this->link))->filtro_and(
                 filtro: $filtro, not_in: $not_in);
             if(errores::$error){
