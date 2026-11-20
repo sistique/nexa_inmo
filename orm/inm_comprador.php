@@ -9,13 +9,7 @@ use gamboamartin\comercial\models\com_agente;
 use gamboamartin\comercial\models\com_cliente;
 use gamboamartin\errores\errores;
 use PDO;
-use setasign\Fpdi\Fpdi;
-use setasign\Fpdi\PdfReader\PdfReaderException;
 use stdClass;
-use Tomsgu\PdfMerger\Exception\FileNotFoundException;
-use Tomsgu\PdfMerger\Exception\InvalidArgumentException;
-use Tomsgu\PdfMerger\PdfCollection;
-use Tomsgu\PdfMerger\PdfMerger;
 
 
 class inm_comprador extends _modelo_parent{
@@ -252,14 +246,20 @@ class inm_comprador extends _modelo_parent{
     }
 
     /**
-     * @throws FileNotFoundException
-     * @throws PdfReaderException
-     * @throws InvalidArgumentException
+     * @param int $inm_comprador_id Comprador al que pertenecen los documentos.
+     * @param array $doc_tipo_documentos_ids Tipos que se incluirán, en orden; vacío incluye todos.
+     * @param array $doc_documento_ids Documentos concretos seleccionados; vacío no limita por documento.
+     * @param string|null $ruta_salida Ruta para guardar el PDF; null descarga el expediente.
+     * @param string[] $orden_tipos_documento Descripciones prioritarias; los demás tipos se agregan al final.
+     * @return array|string|bool Rutas de entrada al descargar, ruta del PDF guardado, false si no hay documentos o error.
      */
 
     public function agrupa_documentos(
         int $inm_comprador_id,
-        array $doc_tipo_documentos_ids = array()
+        array $doc_tipo_documentos_ids = array(),
+        array $doc_documento_ids = array(),
+        ?string $ruta_salida = null,
+        array $orden_tipos_documento = array()
     ): array|string|bool
     {
         $filtro_docs_cliente['inm_comprador.id'] = $inm_comprador_id;
@@ -267,7 +267,12 @@ class inm_comprador extends _modelo_parent{
 
         $in = array();
 
-        if (count($doc_tipo_documentos_ids) > 0) {
+        if (count($doc_documento_ids) > 0) {
+            $in = [
+                'llave' => 'doc_documento.id',
+                'values' => $doc_documento_ids
+            ];
+        } elseif (count($doc_tipo_documentos_ids) > 0) {
             $in = [
                 'llave' => 'doc_tipo_documento.id',
                 'values' => $doc_tipo_documentos_ids
@@ -291,12 +296,31 @@ class inm_comprador extends _modelo_parent{
             return false;
         }
 
-        $comprador = $this->registro(registro_id: $inm_comprador_id, retorno_obj: true);
+        $comprador = $this->registro(registro_id: $inm_comprador_id, columnas_en_bruto: true, retorno_obj: true);
         if (errores::$error) {
             return $this->error->error(
                 mensaje: 'Error al obtener los datos del comprador',
                 data: $comprador
             );
+        }
+
+        if (count($doc_documento_ids) > 0) {
+            $documentos_por_id = array();
+            foreach ($docs_cliente->registros as $documento) {
+                $documentos_por_id[(int)$documento['doc_documento_id']] = $documento;
+            }
+
+            $documentos_ordenados = array();
+            foreach (array_unique($doc_documento_ids) as $documento_id) {
+                if (!isset($documentos_por_id[(int)$documento_id])) {
+                    return $this->error->error(
+                        mensaje: 'El documento seleccionado no está disponible como PDF del comprador',
+                        data: $documento_id
+                    );
+                }
+                $documentos_ordenados[] = $documentos_por_id[(int)$documento_id];
+            }
+            $docs_cliente->registros = $documentos_ordenados;
         }
 
         $nombre_titular = trim((string)($comprador->razon_social ?? ''));
@@ -317,14 +341,14 @@ class inm_comprador extends _modelo_parent{
 
             foreach ($docs_cliente->registros as $documento) {
 
-                $tipo_id = $documento->doc_tipo_documento_id;
+                $tipo_id = $documento['doc_tipo_documento_id'];
 
                 $documentos_por_tipo[$tipo_id][] = $documento;
             }
 
             $documentos_ordenados = array();
 
-            foreach ($doc_tipo_documentos_ids as $tipo_id) {
+            foreach (array_unique($doc_tipo_documentos_ids) as $tipo_id) {
 
                 if (!isset($documentos_por_tipo[$tipo_id])) {
                     continue;
@@ -338,20 +362,27 @@ class inm_comprador extends _modelo_parent{
             $docs_cliente->registros = $documentos_ordenados;
         }
 
-        $pdfCollection = new PdfCollection();
+        if (count($docs_cliente->registros) === 0) {
+            return false;
+        }
+        $docs_cliente->registros = (new _expediente())->ordena_documentos(
+            documentos: $docs_cliente->registros,
+            orden_tipos: $orden_tipos_documento
+        );
+
         $generales = new generales();
 
         $documentos = array();
 
         foreach ($docs_cliente->registros as $documento) {
 
-            $ruta_doc = $generales->path_base . $documento->doc_documento_ruta_relativa;
+            $ruta_doc = $generales->path_base . $documento['doc_documento_ruta_relativa'];
 
             if ($generales->guarda_archivo_dropbox) {
                 $guarda = (new _dropbox(link: $this->link))
                     ->preview(
-                        dropbox_id: $documento->inm_dropbox_ruta_id_dropbox,
-                        extencion: $documento->doc_extension_descripcion
+                        dropbox_id: $documento['inm_dropbox_ruta_id_dropbox'],
+                        extencion: $documento['doc_extension_descripcion']
                     );
 
                 if (errores::$error) {
@@ -373,11 +404,7 @@ class inm_comprador extends _modelo_parent{
 
             $documentos[] = $ruta_doc;
 
-            $pdfCollection->addPdf($ruta_doc);
         }
-
-        $fpdi = new Fpdi();
-        $pdfMerger = new PdfMerger($fpdi);
 
         $nombre_archivo = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nombre_titular);
         if ($nombre_archivo === false) {
@@ -388,13 +415,20 @@ class inm_comprador extends _modelo_parent{
         if ($nombre_archivo === '') {
             $nombre_archivo = 'Cliente ' . $inm_comprador_id;
         }
-        $outputPath = 'EXPEDIENTE ' . $nombre_archivo . '.pdf';
+        $nombre_salida = 'EXPEDIENTE ' . $nombre_archivo . '.pdf';
 
-        $pdfMerger->merge(
-            $pdfCollection,
-            $outputPath,
-            PdfMerger::MODE_DOWNLOAD
-        );
+        if ($ruta_salida !== null) {
+            $resultado = (new _expediente())->une_pdfs(documentos: $documentos, ruta_salida: $ruta_salida);
+            if (errores::$error) {
+                return $this->error->error(mensaje: 'Error al unir documentos del comprador', data: $resultado);
+            }
+            return $ruta_salida;
+        }
+
+        $resultado = (new _expediente())->descarga_pdfs(documentos: $documentos, nombre: $nombre_salida);
+        if (errores::$error) {
+            return $this->error->error(mensaje: 'Error al descargar expediente del comprador', data: $resultado);
+        }
 
         return $documentos;
     }

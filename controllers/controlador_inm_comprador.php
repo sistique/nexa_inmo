@@ -4325,8 +4325,105 @@ class controlador_inm_comprador extends _ctl_base {
         return $archivos;
     }
 
+    private function nombre_archivo_expediente(string $titular, string $respaldo): string
+    {
+        $titular = trim($titular);
+        if ($titular === '' || strtoupper($titular) === 'POR ASIGNAR') {
+            $titular = $respaldo;
+        }
+
+        $nombre_archivo = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $titular);
+        if ($nombre_archivo === false) {
+            $nombre_archivo = $titular;
+        }
+        $nombre_archivo = preg_replace('/[^A-Za-z0-9 ._-]/', '', $nombre_archivo) ?? '';
+        $nombre_archivo = trim($nombre_archivo, " ._-");
+        if ($nombre_archivo === '') {
+            $nombre_archivo = $respaldo;
+        }
+
+        return 'EXPEDIENTE - ' . $nombre_archivo . '.pdf';
+    }
+
+    private function registra_expediente_correo(
+        string $ruta,
+        string $nombre,
+        string $tipo_entidad,
+        int $entidad_id
+    ): array|stdClass|string {
+        if (!is_file($ruta) || !is_readable($ruta)) {
+            return $this->errores->error(
+                mensaje: 'El PDF del expediente no existe o no puede leerse',
+                data: $ruta
+            );
+        }
+
+        $registro = array(
+            'doc_tipo_documento_id' => 88,
+            'name_out' => $nombre
+        );
+
+        $file = array(
+            'name' => $nombre,
+            'tmp_name' => $ruta,
+            'type' => 'application/pdf',
+            'size' => filesize($ruta),
+            'error' => UPLOAD_ERR_OK
+        );
+
+        $_FILES['documento'] = $file;
+
+        if ($tipo_entidad === 'comprador') {
+            $moddelo = new inm_doc_comprador(link: $this->link);
+
+            $registro['inm_comprador_id'] = $entidad_id;
+            $moddelo->registro = $registro;
+
+            $relacion = $moddelo->alta_bd();
+        } elseif ($tipo_entidad === 'ubicacion') {
+            $moddelo = new inm_doc_ubicacion(link: $this->link);
+
+            $registro['inm_ubicacion_id'] = $entidad_id;
+            $moddelo->registro = $registro;
+
+            $relacion = $moddelo->alta_bd();
+        } else {
+            return $this->errores->error(
+                mensaje: 'Tipo de entidad no válido para registrar expediente',
+                data: $tipo_entidad
+            );
+        }
+        if (errores::$error) {
+            return $this->errores->error(
+                mensaje: 'Error al vincular expediente con su entidad',
+                data: $relacion
+            );
+        }
+
+        return $relacion->registro['doc_documento_id'];
+    }
+
     public function envia_correo_bd(bool $header, bool $ws = false)
     {
+
+        $filtro_rel['inm_comprador.id'] = $this->registro_id;
+        $registro_valuador = (new inm_rel_cliente_valuador($this->link))->filtro_and(filtro: $filtro_rel);
+        if(errores::$error){
+            return $this->retorno_error(
+                mensaje: 'Error al obtener registro',data:  $registro_valuador,header: $header,ws: $ws);
+        }
+
+        $agrupar_documentos = false;
+        if($registro_valuador->n_registros > 0) {
+            if($registro_valuador->registros[0]['inm_valuador_expediente_agrupado'] === 'activo') {
+                $agrupar_documentos = true;
+            }
+        }
+
+        $orden_expediente_cliente = array('PRECALIFICACION INFONAVIT', 'INE', 'ACTA DE NACIMIENTO', 'CURP',
+            'CONSTANCIA DE SITUACION FISCAL', 'TALLER', 'COMPROBANTE DE DOMICILIO');
+        $orden_expediente_ubicacion = array('INE', 'ACTA DE NACIMIENTO', 'CURP', 'CONSTANCIA DE SITUACION FISCAL',
+            'COMPROBANTE DE DOMICILIO', 'ESCRITURA', 'PREDIAL', 'AGUA');
         $this->link->beginTransaction();
 
         $filtro_rel_emisor['adm_usuario.id'] = $_SESSION['usuario_id'];
@@ -4438,15 +4535,18 @@ class controlador_inm_comprador extends _ctl_base {
 
         $documentos_cliente_validos = array();
         foreach ($docs_cliente->registros as $documento) {
-            $razon_social = implode(' ', array_filter([
+            $nombre_titular = trim(implode(' ', array_filter([
                 $documento['inm_comprador_nombre'] ?? '',
                 $documento['inm_comprador_apellido_paterno'] ?? '',
                 $documento['inm_comprador_apellido_materno'] ?? ''
-            ]));
+            ])));
 
-            $documentos_cliente_validos[(int)$documento['doc_documento_id']] =
-                $documento['doc_tipo_documento_descripcion'] . ' - ' . $razon_social
-                .'.' . $documento['doc_extension_descripcion'];
+            $documentos_cliente_validos[(int)$documento['doc_documento_id']] = array(
+                'name_out' => $documento['doc_tipo_documento_descripcion'] . ' - ' . $nombre_titular
+                    . '.' . $documento['doc_extension_descripcion'],
+                'es_pdf' => strtolower((string)$documento['doc_extension_descripcion']) === 'pdf',
+                'nombre_titular' => $nombre_titular
+            );
         }
 
         $filtro_rel_ubicacion['inm_rel_ubi_comp.status'] = 'activo';
@@ -4466,6 +4566,7 @@ class controlador_inm_comprador extends _ctl_base {
         )));
 
         $documentos_ubicacion_validos = array();
+        $ubicacion_por_documento = array();
         foreach ($ubicaciones_ids as $ubicacion_id) {
             $filtro_docs_ubicacion['inm_ubicacion.id'] = $ubicacion_id;
             $docs_ubicacion = (new inm_doc_ubicacion(link: $this->link))->filtro_and(
@@ -4476,16 +4577,41 @@ class controlador_inm_comprador extends _ctl_base {
                     data: $docs_ubicacion, header: $header, ws: $ws);
             }
             foreach ($docs_ubicacion->registros as $documento) {
-                $documentos_ubicacion_validos[(int)$documento['doc_documento_id']] =
-                    $documento['doc_tipo_documento_descripcion'] . ' - ' . $documento['inm_ubicacion_razon_social'] .
-                    '.' . $documento['doc_extension_descripcion'];
+                $documento_id = (int)$documento['doc_documento_id'];
+                $nombre_titular = trim((string)$documento['inm_ubicacion_razon_social']);
+                if ($nombre_titular === '' || strtoupper($nombre_titular) === 'POR ASIGNAR') {
+                    $nombre_titular = trim(implode(' ', array_filter([
+                        $documento['inm_ubicacion_nombre'] ?? '',
+                        $documento['inm_ubicacion_apellido_paterno'] ?? '',
+                        $documento['inm_ubicacion_apellido_materno'] ?? ''
+                    ])));
+                }
+                $documentos_ubicacion_validos[$documento_id] = array(
+                    'name_out' => $documento['doc_tipo_documento_descripcion'] . ' - ' . $nombre_titular .
+                        '.' . $documento['doc_extension_descripcion'],
+                    'es_pdf' => strtolower((string)$documento['doc_extension_descripcion']) === 'pdf',
+                    'nombre_titular' => $nombre_titular
+                );
+                $ubicacion_por_documento[$documento_id] = $ubicacion_id;
             }
         }
 
         $documentos_adjuntos = array();
+        $documentos_cliente_pdf_ids = array();
+        $documentos_cliente_nombre = '';
+        $documentos_ubicacion_pdf_ids = array();
+        $documentos_ubicacion_nombres = array();
         $documentos_por_origen = array(
-            array('seleccionados' => $documentos_cliente_post, 'permitidos' => $documentos_cliente_validos),
-            array('seleccionados' => $documentos_ubicacion_post, 'permitidos' => $documentos_ubicacion_validos)
+            array(
+                'tipo' => 'cliente',
+                'seleccionados' => $documentos_cliente_post,
+                'permitidos' => $documentos_cliente_validos
+            ),
+            array(
+                'tipo' => 'ubicacion',
+                'seleccionados' => $documentos_ubicacion_post,
+                'permitidos' => $documentos_ubicacion_validos
+            )
         );
         foreach ($documentos_por_origen as $origen) {
             foreach ($origen['seleccionados'] as $documento_id) {
@@ -4503,10 +4629,127 @@ class controlador_inm_comprador extends _ctl_base {
                         data: array('doc_documento_id' => $documento_id), header: $header, ws: $ws);
                 }
 
-                $documentos_adjuntos[$documento_id] = array(
-                    'doc_documento_id' => $documento_id,
-                    'name_out' => $origen['permitidos'][$documento_id]);
+                $documento = $origen['permitidos'][$documento_id];
+                if (!$agrupar_documentos || !$documento['es_pdf']) {
+                    $documentos_adjuntos[$documento_id] = array(
+                        'doc_documento_id' => $documento_id,
+                        'name_out' => $documento['name_out']
+                    );
+                    continue;
+                }
+
+                if ($origen['tipo'] === 'cliente') {
+                    $documentos_cliente_pdf_ids[] = $documento_id;
+                    $documentos_cliente_nombre = $documento['nombre_titular'];
+                    continue;
+                }
+
+                $ubicacion_id = $ubicacion_por_documento[$documento_id];
+                $documentos_ubicacion_pdf_ids[$ubicacion_id][] = $documento_id;
+                $documentos_ubicacion_nombres[$ubicacion_id] = $documento['nombre_titular'];
             }
+        }
+
+        if (count($documentos_cliente_pdf_ids) > 0) {
+            $ruta_expediente = tempnam(sys_get_temp_dir(), 'expediente_cliente_');
+            if ($ruta_expediente === false) {
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'Error al crear archivo temporal del expediente',
+                    data: sys_get_temp_dir(), header: $header, ws: $ws);
+            }
+
+            $expediente = (new inm_comprador(link: $this->link))->agrupa_documentos(
+                inm_comprador_id: $this->registro_id,
+                doc_documento_ids: $documentos_cliente_pdf_ids,
+                ruta_salida: $ruta_expediente,
+                orden_tipos_documento: $orden_expediente_cliente
+            );
+            if (errores::$error) {
+                unlink($ruta_expediente);
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'Error al agrupar documentos del cliente',
+                    data: $expediente, header: $header, ws: $ws);
+            }
+            if (!is_string($expediente) || !is_file($expediente) || filesize($expediente) === 0) {
+                unlink($ruta_expediente);
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'No se pudo generar el PDF del expediente del cliente',
+                    data: $expediente, header: $header, ws: $ws);
+            }
+
+            $nombre_expediente = $this->nombre_archivo_expediente(
+                titular: $documentos_cliente_nombre,
+                respaldo: 'Cliente ' . $this->registro_id
+            );
+
+            $documento_expediente_id = $this->registra_expediente_correo(
+                ruta: $ruta_expediente,
+                nombre: $nombre_expediente,
+                tipo_entidad: 'comprador',
+                entidad_id: $this->registro_id
+            );
+
+            unlink($ruta_expediente);
+            if (errores::$error) {
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'Error al registrar expediente del cliente',
+                    data: $documento_expediente_id, header: $header, ws: $ws);
+            }
+
+            $documentos_adjuntos['expediente_cliente'] = array(
+                'doc_documento_id' => (int)$documento_expediente_id,
+                'name_out' => $nombre_expediente
+            );
+        }
+
+        foreach ($documentos_ubicacion_pdf_ids as $ubicacion_id => $documento_ids) {
+            $ruta_expediente = tempnam(sys_get_temp_dir(), 'expediente_ubicacion_');
+            if ($ruta_expediente === false) {
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'Error al crear archivo temporal del expediente',
+                    data: sys_get_temp_dir(), header: $header, ws: $ws);
+            }
+
+            $expediente = (new inm_ubicacion(link: $this->link))->agrupa_documentos(
+                inm_ubicacion_id: (int)$ubicacion_id,
+                doc_documento_ids: $documento_ids,
+                ruta_salida: $ruta_expediente,
+                orden_tipos_documento: $orden_expediente_ubicacion
+            );
+            if (errores::$error) {
+                unlink($ruta_expediente);
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'Error al agrupar documentos de la ubicación',
+                    data: $expediente, header: $header, ws: $ws);
+            }
+            if (!is_string($expediente) || !is_file($expediente) || filesize($expediente) === 0) {
+                unlink($ruta_expediente);
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'No se pudo generar el PDF del expediente de la ubicación',
+                    data: $expediente, header: $header, ws: $ws);
+            }
+
+            $nombre_expediente = $this->nombre_archivo_expediente(
+                titular: $documentos_ubicacion_nombres[$ubicacion_id],
+                respaldo: 'Propietario ' . $ubicacion_id
+            );
+            $documento_expediente_id = $this->registra_expediente_correo(
+                ruta: $ruta_expediente,
+                nombre: $nombre_expediente,
+                tipo_entidad: 'ubicacion',
+                entidad_id: (int)$ubicacion_id
+            );
+            unlink($ruta_expediente);
+            if (errores::$error) {
+                $this->link->rollBack();
+                return $this->retorno_error(mensaje: 'Error al registrar expediente de la ubicación',
+                    data: $documento_expediente_id, header: $header, ws: $ws);
+            }
+
+            $documentos_adjuntos['expediente_ubicacion_' . $ubicacion_id] = array(
+                'doc_documento_id' => (int)$documento_expediente_id,
+                'name_out' => $nombre_expediente
+            );
         }
 
         $archivos_subir = array();
