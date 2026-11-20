@@ -104,6 +104,7 @@ class controlador_inm_comprador extends _ctl_base {
     public array $comprobante_exento = array();
     public array $xml_exento = array();
     public array $inm_ubicaciones = array();
+    public array $buttons_proceso_ubicacion = array();
     public array $inm_clientes_valuadores = array();
     public array $inm_co_acreditados = array();
     public array $inm_conf_docs_comprador = array();
@@ -2567,6 +2568,29 @@ class controlador_inm_comprador extends _ctl_base {
         }
         $this->inputs->actual_inm_status_comprador_id  = $inm_status_comprador_id;
 
+        $filtro_relacion = array('inm_comprador.id' => $this->registro_id, 'inm_rel_ubi_comp.status' => 'activo');
+        $relaciones = (new inm_rel_ubi_comp(link: $this->link))->filtro_and(filtro: $filtro_relacion);
+        if (errores::$error) {
+            return $this->retorno_error(mensaje: 'Error al obtener ubicaciones relacionadas', data: $relaciones,
+                header: $header, ws: $ws);
+        }
+
+        $this->buttons_proceso_ubicacion = array();
+        foreach ($relaciones->registros as $relacion) {
+            $ubicacion_id = (int)$relacion['inm_ubicacion_id'];
+            if (isset($this->buttons_proceso_ubicacion[$ubicacion_id])) {
+                continue;
+            }
+            $button = $this->html->button_href(accion: 'proceso_ubicacion',
+                etiqueta: 'Ver ubicacion', registro_id: $ubicacion_id,
+                seccion: 'inm_ubicacion', style: 'primary', css_extra: 'item-br', cols: 12);
+            if (errores::$error) {
+                return $this->retorno_error(mensaje: 'Error al generar boton de ubicacion', data: $button,
+                    header: $header, ws: $ws);
+            }
+            $this->buttons_proceso_ubicacion[$ubicacion_id] = $button;
+        }
+
         $btn_action_next = $this->html->hidden('btn_action_next', value: 'proceso_cliente');
         if (errores::$error) {
             return $this->retorno_error(
@@ -3146,14 +3170,15 @@ class controlador_inm_comprador extends _ctl_base {
             $filtro['inm_conf_docs_comprador.con_co_acreditado'] = 'inactivo';
             $filtro['inm_conf_docs_comprador.con_beneficiario'] = '0';
             $filtro['inm_institucion_hipotecaria.id'] = $registro->registros[0]['inm_institucion_hipotecaria_id'];
-            $not_in = array();
+            $filtro['inm_conf_docs_comprador.envio_avaluo'] = 'activo';
+            /*$not_in = array();
             $not_in['llave'] = 'doc_tipo_documento.descripcion';
             $not_in['values'] = array('VIGENCIA INE', 'RELACIONES LABORALES', 'AFORE','ESCRITURA', 'AVALUO',
                 'SIC', 'CONSTANCIA DE CREDITO', 'ANEXOS', 'INSTITUCION DE CREDITO', 'NOTIFICACION DE DESCUENTO',
                 'ISR NOTARIA', 'VALIDACION PODER', 'ACUSE DEL PATRON', 'SOLICITUD AVALUO FIRMADA',
-                'CONFIRMACION COTEJO');
+                'CONFIRMACION COTEJO');*/
             $inm_conf_docs_comprador = (new inm_conf_docs_comprador(link: $this->link))->filtro_and(
-                filtro: $filtro, not_in: $not_in);
+                filtro: $filtro/*, not_in: $not_in*/);
             if(errores::$error){
                 return $this->retorno_error(mensaje: 'Error al obtener inm_conf_docs_comprador',
                     data:  $inm_conf_docs_comprador,header:  $header, ws:  $ws);
@@ -3176,13 +3201,15 @@ class controlador_inm_comprador extends _ctl_base {
             $filtro_ubi['inm_conf_docs_ubicacion.es_foto'] = 'inactivo';
             $filtro_ubi['inm_conf_docs_ubicacion.con_conyuge'] = 'inactivo';
             $filtro_ubi['inm_conf_docs_ubicacion.con_co_acreditado'] = 'inactivo';
-            $not_in = array();
+            $filtro_ubi['inm_conf_docs_ubicacion.envio_avaluo'] = 'activo';
+
+            /*$not_in = array();
             $not_in['llave'] = 'doc_tipo_documento.descripcion';
             $not_in['values'] = array('VIGENCIA INE', 'PODER ORIGINAL', 'CONTRATO PROMESA COMPRAVENTA',
                 'CANCELACION HIPOTECA', 'ESTADO DE CUENTA HISTORICO', 'ISR EXENTO', 'CNA AGUA', 'CNA PREDIAL', 'RPPC',
-                'COPIA PODER');
+                'COPIA PODER');*/
             $inm_conf_docs_prospecto = (new inm_conf_docs_ubicacion(link: $this->link))->filtro_and(
-                filtro: $filtro_ubi, not_in: $not_in);
+                filtro: $filtro_ubi/*, not_in: $not_in*/);
             if (errores::$error) {
                 return $this->retorno_error(mensaje: 'Error al obtener inm_conf_docs_prospecto',
                     data: $inm_conf_docs_prospecto, header: $header, ws: $ws);

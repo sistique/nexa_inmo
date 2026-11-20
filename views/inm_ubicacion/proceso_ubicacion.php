@@ -9,12 +9,21 @@
 
             <div class="col-lg-12">
                 <?php include (new views())->ruta_templates."head/title.php"; ?>
-                <?php include (new views())->ruta_templates."mensajes.php"; ?>
-
                 <div class="widget  widget-box box-container form-main widget-form-cart" id="form">
+
+                    <?php if ($controlador->buttons_proceso_cliente): ?>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <?php foreach ($controlador->buttons_proceso_cliente as $button): ?>
+                                    <?php echo $button; ?>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <?php echo $controlador->inputs->inm_ubicacion_seleccionado_id; ?>
                     <?php echo $controlador->inputs->actual_inm_status_ubicacion_id; ?>
+
                     <div id="pestanasgeneral">
                         <ul id="listageneral">
                             <li id="pestanageneral1"><a href='javascript:cambiarPestannaGeneral(pestanasgeneral,pestanageneral1,pestanasubicacion);'>UBICACION</a></li>
@@ -1251,7 +1260,6 @@
         <img class="imagen_modal">
     </div>
 </div>
-
 
 
 

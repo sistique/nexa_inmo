@@ -47,6 +47,7 @@ use gamboamartin\inmuebles\models\inm_rel_doc_efectivo_ubicacion;
 use gamboamartin\inmuebles\models\inm_rel_doc_transferencia_ubicacion;
 use gamboamartin\inmuebles\models\inm_rel_efectivo_ubicacion;
 use gamboamartin\inmuebles\models\inm_rel_transferencia_ubicacion;
+use gamboamartin\inmuebles\models\inm_rel_ubi_comp;
 use gamboamartin\inmuebles\models\inm_reparacion;
 use gamboamartin\inmuebles\models\inm_status_ubicacion;
 use gamboamartin\inmuebles\models\inm_tipo_cheque;
@@ -138,6 +139,7 @@ class controlador_inm_ubicacion extends _ctl_base
     public string $link_fotografia_bd = '';
     public string $link_documento_bd = '';
     public array $imp_compradores = array();
+    public array $buttons_proceso_cliente = array();
     public array $cheques = array();
     public array $transferencias = array();
     public array $efectivos = array();
@@ -5561,6 +5563,29 @@ class controlador_inm_ubicacion extends _ctl_base
             return $this->retorno_error(mensaje: 'Error al generar input', data: $inm_status_ubicacion_id, header: $header, ws: $ws);
         }
         $this->inputs->actual_inm_status_ubicacion_id = $inm_status_ubicacion_id;
+
+        $filtro_relacion = array('inm_ubicacion.id' => $this->registro_id, 'inm_rel_ubi_comp.status' => 'activo');
+        $relaciones = (new inm_rel_ubi_comp(link: $this->link))->filtro_and(filtro: $filtro_relacion);
+        if (errores::$error) {
+            return $this->retorno_error(mensaje: 'Error al obtener clientes relacionados', data: $relaciones,
+                header: $header, ws: $ws);
+        }
+
+        $this->buttons_proceso_cliente = array();
+        foreach ($relaciones->registros as $relacion) {
+            $comprador_id = (int)$relacion['inm_comprador_id'];
+            if (isset($this->buttons_proceso_cliente[$comprador_id])) {
+                continue;
+            }
+            $button = $this->html->button_href(accion: 'proceso_cliente',
+                etiqueta: 'Ver cliente', registro_id: $comprador_id,
+                seccion: 'inm_comprador', style: 'primary',  css_extra: 'item-br', cols: 12);
+            if (errores::$error) {
+                return $this->retorno_error(mensaje: 'Error al generar boton de cliente', data: $button,
+                    header: $header, ws: $ws);
+            }
+            $this->buttons_proceso_cliente[$comprador_id] = $button;
+        }
 
         $btn_action_next = $this->html->hidden('btn_action_next', value: 'proceso_ubicacion');
         if (errores::$error) {
