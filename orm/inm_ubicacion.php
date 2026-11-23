@@ -741,6 +741,40 @@ class inm_ubicacion extends _inm_ubicaciones {
             );
         }
 
+        $concepto_ubi = [
+            'SALDO INFONAVIT' => 'adeudo_hipoteca',
+            'DEVOLUCION COMPRA' => 'monto_devolucion',
+        ];
+
+        $concepto_comp = [
+            'DEVOLUCION' => 'inm_comprador_devolucion',
+        ];
+
+        $r_ubicacion = $this->registro(registro_id: $inm_ubicacion_id);
+        if (errores::$error) {
+            $this->error->error(
+                mensaje: 'Error al obtener registro de ubicacion',
+                data: $r_ubicacion
+            );
+        }
+
+        $filtro_rel = [
+            'inm_ubicacion.id' => $inm_ubicacion_id,
+            'inm_rel_ubi_comp.status' => 'activo'
+        ];
+
+        $r_rel_ubi_comp = (new inm_rel_ubi_comp(link: $this->link))
+            ->filtro_and(
+                filtro: $filtro_rel
+            );
+
+        if (errores::$error) {
+            $this->error->error(
+                mensaje: 'Error al obtener relación de cliente',
+                data: $r_rel_ubi_comp
+            );
+        }
+
         $altas = [];
         foreach ($r_conf_presupuesto->registros as $registro) {
             $filtro_presupuesto = [
@@ -748,19 +782,35 @@ class inm_ubicacion extends _inm_ubicaciones {
                 'inm_concepto.id' => $registro['inm_concepto_id']
             ];
 
-            $existe = (new inm_presupuesto_costo(link: $this->link))
-                ->existe(
+            $inm_presupuesto = (new inm_presupuesto_costo(link: $this->link))
+                ->filtro_and(
                     filtro: $filtro_presupuesto
                 );
 
             if (errores::$error) {
                 $this->error->error(
                     mensaje: 'Error al validar si existe registro de presupuesto',
-                    data: $existe
+                    data: $inm_presupuesto
                 );
             }
 
-            if(!$existe) {
+            foreach ($concepto_ubi as $concepto => $campo) {
+                if ($registro['inm_concepto_descripcion'] === $concepto) {
+                    $registro['inm_conf_presupuesto_costo_monto_presupuesto']
+                        = $r_ubicacion['inm_ubicacion_' . $campo];
+                }
+            }
+
+            if($r_rel_ubi_comp->n_registros > 0) {
+                foreach ($concepto_comp as $concepto => $campo) {
+                    if ($registro['inm_concepto_descripcion'] === $concepto) {
+                        $registro['inm_conf_presupuesto_costo_monto_presupuesto']
+                            = $r_rel_ubi_comp->registros[0]['inm_comprador_' . $campo];
+                    }
+                }
+            }
+
+            if($inm_presupuesto->n_registros <= 0) {
                 $registro_presupuesto = array();
                 $registro_presupuesto['inm_ubicacion_id'] = $inm_ubicacion_id;
                 $registro_presupuesto['inm_concepto_id'] = $registro['inm_concepto_id'];
@@ -779,6 +829,22 @@ class inm_ubicacion extends _inm_ubicaciones {
                 }
 
                 $altas[] = $r_inm_presupuesto;
+            }else{
+                $registro_presupuesto = array();
+                $registro_presupuesto['monto_presupuesto'] = $registro['inm_conf_presupuesto_costo_monto_presupuesto'];
+
+                $r_inm_presupuesto = (new inm_presupuesto_costo(link: $this->link))
+                    ->modifica_bd(
+                        registro: $registro_presupuesto,
+                        id: $inm_presupuesto->registros[0]['inm_presupuesto_costo_id']
+                    );
+
+                if (errores::$error) {
+                    $this->error->error(
+                        mensaje: 'Error al modificar registro de presupuesto',
+                        data: $r_inm_presupuesto
+                    );
+                }
             }
         }
 
