@@ -1,6 +1,14 @@
 # inmuebles
 Administracion de inmobiliarias
 
+## Relaciones de agentes
+
+Las secciones `inm_rel_agente_proveedor` e `inm_rel_agente_empleado` administran las relaciones
+de agentes con proveedores y empleados desde el menú Clientes. El instalador de inmuebles crea sus
+tablas y permisos; antes deben existir las tablas `com_agente`, `gt_proveedor` y `em_empleado`.
+Estas relaciones no limitan cuántos proveedores o empleados puede tener un agente, ni cuántos
+agentes pueden vincularse a cada proveedor o empleado.
+
 ## Expedientes PDF
 
 La agrupación de documentos de cliente y ubicación requiere `qpdf` disponible en el `PATH` del proceso PHP

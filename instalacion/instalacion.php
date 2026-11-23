@@ -4104,9 +4104,45 @@ class instalacion
 
     }
 
+    private function instala_rel_agente(PDO $link, string $tabla, string $entidad, string $etiqueta): array|stdClass
+    {
+        $init = new _instalacion(link: $link);
+        $out = new stdClass();
+        $out->create = $init->create_table_new(table: $tabla);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al crear tabla '.$tabla, data: $out->create);
+        }
+
+        $foraneas = array('com_agente_id' => new stdClass(), $entidad.'_id' => new stdClass());
+        $out->foraneas = $init->foraneas(foraneas: $foraneas, table: $tabla);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar foraneas de '.$tabla, data: $out->foraneas);
+        }
+
+        $out->acl = (new _adm())->integra_acl(adm_menu_descripcion: 'Clientes',
+            adm_namespace_name: 'gamboamartin/inmuebles', adm_namespace_descripcion: 'gamboa.martin/inmuebles',
+            adm_seccion_descripcion: $tabla, adm_seccion_pertenece_descripcion: 'inmuebles',
+            adm_sistema_descripcion: 'inmuebles', etiqueta_label: $etiqueta, link: $link);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al configurar permisos de '.$tabla, data: $out->acl);
+        }
+        return $out;
+    }
+
     final public function instala(PDO $link): array|stdClass
     {
         $out = new stdClass();
+
+        foreach (array(
+            'inm_rel_agente_proveedor' => array('gt_proveedor', 'Agente proveedor'),
+            'inm_rel_agente_empleado' => array('em_empleado', 'Agente empleado')
+        ) as $tabla => [$entidad, $etiqueta]) {
+            $resultado = $this->instala_rel_agente(link: $link, tabla: $tabla, entidad: $entidad, etiqueta: $etiqueta);
+            if (errores::$error) {
+                return (new errores())->error(mensaje: 'Error al instalar '.$tabla, data: $resultado);
+            }
+            $out->$tabla = $resultado;
+        }
 
         $inm_notaria = $this->inm_notaria(link: $link);
         if(errores::$error){
