@@ -309,7 +309,11 @@ class controlador_inm_doc_comprador extends _ctl_formato {
     {
         $tipo_documento = trim((string)$registro->doc_tipo_documento_descripcion);
 
-        $nombre = trim((string)$registro->inm_comprador_razon_social);
+        $nombre = implode(' ', array_filter([
+            $registro->inm_comprador_nombre,
+            $registro->inm_comprador_apellido_paterno,
+            $registro->inm_comprador_apellido_materno
+        ], fn($campo) => trim((string)$campo) !== ''));
 
         return $tipo_documento !== '' ? $tipo_documento . ($nombre !== '' ? ' - ' . $nombre : '') : $nombre;
     }
