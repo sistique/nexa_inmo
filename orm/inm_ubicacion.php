@@ -747,7 +747,7 @@ class inm_ubicacion extends _inm_ubicaciones {
         ];
 
         $concepto_comp = [
-            'DEVOLUCIÓN VENTA' => 'inm_comprador_devolucion',
+            'DEVOLUCIÓN VENTA' => 'devolucion',
         ];
 
         $r_ubicacion = $this->registro(registro_id: $inm_ubicacion_id);
