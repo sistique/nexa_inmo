@@ -4,12 +4,10 @@ namespace gamboamartin\inmuebles\tests\orm;
 
 use gamboamartin\base_modelos\base_modelos;
 use gamboamartin\errores\errores;
-use gamboamartin\inmuebles\models\_rel_agente;
 use gamboamartin\inmuebles\models\inm_rel_agente_empleado;
 use gamboamartin\inmuebles\models\inm_rel_agente_proveedor;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use ReflectionProperty;
 
 class inm_rel_agenteTest extends TestCase
 {
@@ -23,13 +21,12 @@ class inm_rel_agenteTest extends TestCase
         errores::$error = false;
     }
 
-    private function modelo(string $clase, string $entidad_id): _rel_agente
+    private function modelo(string $clase): inm_rel_agente_proveedor|inm_rel_agente_empleado
     {
         errores::$error = false;
         $modelo = (new ReflectionClass($clase))->newInstanceWithoutConstructor();
         $modelo->error = new errores();
         $modelo->validacion = new base_modelos();
-        (new ReflectionProperty(_rel_agente::class, 'entidad_id'))->setValue($modelo, $entidad_id);
         return $modelo;
     }
 
@@ -37,7 +34,7 @@ class inm_rel_agenteTest extends TestCase
     {
         foreach (array(inm_rel_agente_proveedor::class => 'gt_proveedor_id',
                        inm_rel_agente_empleado::class => 'em_empleado_id') as $clase => $entidad_id) {
-            $modelo = $this->modelo(clase: $clase, entidad_id: $entidad_id);
+            $modelo = $this->modelo(clase: $clase);
             foreach (array(array('com_agente_id' => 0, $entidad_id => 1),
                            array('com_agente_id' => 1, $entidad_id => -1)) as $registro) {
                 errores::$error = false;
@@ -60,7 +57,7 @@ class inm_rel_agenteTest extends TestCase
             foreach (array(inm_rel_agente_proveedor::class => 'gt_proveedor_id',
                            inm_rel_agente_empleado::class => 'em_empleado_id') as $clase => $entidad_id) {
                 errores::$error = false;
-                $modelo = $this->modelo(clase: $clase, entidad_id: $entidad_id);
+                $modelo = $this->modelo(clase: $clase);
                 $modelo->registro = array('com_agente_id' => 12, $entidad_id => 34);
                 $modelo->alta_bd();
                 $this->assertSame('12 34', $modelo->registro['descripcion']);

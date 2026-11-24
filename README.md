@@ -9,6 +9,10 @@ tablas y permisos; antes deben existir las tablas `com_agente`, `gt_proveedor` y
 Estas relaciones no limitan cuántos proveedores o empleados puede tener un agente, ni cuántos
 agentes pueden vincularse a cada proveedor o empleado.
 
+Para comprobar los formularios y consultas de listado con la base configurada, ejecutar
+`NEXA_TEST_READONLY_DB=1 vendor/bin/phpunit tests/controllers/inm_rel_agenteTest.php`.
+Esta prueba solo realiza consultas y requiere las tablas y permisos instalados.
+
 ## Expedientes PDF
 
 La agrupación de documentos de cliente y ubicación requiere `qpdf` disponible en el `PATH` del proceso PHP
