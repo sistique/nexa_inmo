@@ -1009,6 +1009,194 @@ class instalacion
         return $out;
     }
 
+    private function _add_inm_tipo_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $init = new _instalacion(link: $link);
+
+        $create = $init->create_table_new(table: 'inm_tipo_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        return $out;
+    }
+
+    private function _add_inm_status_periodo_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $init = new _instalacion(link: $link);
+
+        $create = $init->create_table_new(table: 'inm_status_periodo_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        return $out;
+    }
+
+    private function _add_inm_conf_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $init = new _instalacion(link: $link);
+
+        $create = $init->create_table_new(table: 'inm_conf_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        $columnas = new stdClass();
+        $columnas->predeterminado = new stdClass();
+        $columnas->predeterminado->default = 'inactivo';
+        foreach (array('fecha_inicial', 'fecha_final') as $campo) {
+            $columnas->$campo = new stdClass();
+            $columnas->$campo->tipo_dato = 'DATE';
+            $columnas->$campo->not_null = false;
+        }
+        foreach (array('porcentaje_pago', 'monto_pago_fijo') as $campo) {
+            $columnas->$campo = new stdClass();
+            $columnas->$campo->tipo_dato = 'DOUBLE';
+            $columnas->$campo->longitud = '100,2';
+            $columnas->$campo->not_null = false;
+        }
+        foreach (array('com_tipo_agente_id', 'inm_tipo_comision_id') as $campo) {
+            $columnas->$campo = new stdClass();
+            $columnas->$campo->tipo_dato = 'BIGINT';
+            $columnas->$campo->longitud = '100';
+            $columnas->$campo->not_null = false;
+        }
+
+        $add_columns = $init->add_columns(campos: $columnas, table: 'inm_conf_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar columnas', data: $add_columns);
+        }
+        $out->add_columns = $add_columns;
+
+        $foraneas = array(
+            'com_tipo_agente_id' => new stdClass(),
+            'inm_tipo_comision_id' => new stdClass()
+        );
+        $foraneas = $init->foraneas(foraneas: $foraneas, table: 'inm_conf_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar llaves foraneas', data: $foraneas);
+        }
+        $out->foraneas = $foraneas;
+
+        return $out;
+    }
+
+    private function _add_inm_periodo_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $init = new _instalacion(link: $link);
+
+        $create = $init->create_table_new(table: 'inm_periodo_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        $columnas = new stdClass();
+        foreach (array('fecha_inicial', 'fecha_final', 'fecha_pago') as $campo) {
+            $columnas->$campo = new stdClass();
+            $columnas->$campo->tipo_dato = 'DATE';
+        }
+        foreach (array('inm_conf_comision_id', 'inm_status_periodo_comision_id') as $campo) {
+            $columnas->$campo = new stdClass();
+            $columnas->$campo->tipo_dato = 'BIGINT';
+            $columnas->$campo->longitud = '100';
+        }
+
+        $add_columns = $init->add_columns(campos: $columnas, table: 'inm_periodo_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar columnas', data: $add_columns);
+        }
+        $out->add_columns = $add_columns;
+
+        $foraneas = array(
+            'inm_conf_comision_id' => new stdClass(),
+            'inm_status_periodo_comision_id' => new stdClass()
+        );
+        $foraneas = $init->foraneas(foraneas: $foraneas, table: 'inm_periodo_comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar llaves foraneas', data: $foraneas);
+        }
+        $out->foraneas = $foraneas;
+
+        return $out;
+    }
+
+    private function instala_tabla_comision(PDO $link, string $tabla, array $foraneas,
+                                            array $importes = array()): array|stdClass
+    {
+        $init = new _instalacion(link: $link);
+        $existe = $init->existe_entidad(table: $tabla);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al verificar tabla', data: $existe);
+        }
+        $out = new stdClass();
+        if ($existe) {
+            $out->create = 'Ya existe tabla ' . $tabla;
+            return $out;
+        }
+
+        $out->create = $init->create_table_new(table: $tabla);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al crear tabla', data: $out->create);
+        }
+
+        $columnas = new stdClass();
+        foreach ($foraneas as $campo) {
+            $columnas->$campo = new stdClass();
+            $columnas->$campo->tipo_dato = 'BIGINT';
+            $columnas->$campo->longitud = '100';
+        }
+        foreach ($importes as $campo) {
+            $columnas->$campo = new stdClass();
+            $columnas->$campo->tipo_dato = 'DECIMAL';
+            $columnas->$campo->longitud = '15,2';
+        }
+        if (count((array)$columnas) > 0) {
+            $out->columnas = $init->add_columns(campos: $columnas, table: $tabla);
+            if (errores::$error) {
+                return (new errores())->error(mensaje: 'Error al agregar columnas', data: $out->columnas);
+            }
+        }
+        if (count($foraneas) > 0) {
+            $campos_foraneos = array();
+            foreach ($foraneas as $campo) {
+                $campos_foraneos[$campo] = new stdClass();
+            }
+            $out->foraneas = $init->foraneas(foraneas: $campos_foraneos, table: $tabla);
+            if (errores::$error) {
+                return (new errores())->error(mensaje: 'Error al integrar llaves foraneas', data: $out->foraneas);
+            }
+        }
+        return $out;
+    }
+
+    private function instala_crud_comision(PDO $link, string $tabla, string $etiqueta, array $foraneas = array(),
+                                           array $importes = array()): array|stdClass
+    {
+        $out = new stdClass();
+        $out->tabla = $this->instala_tabla_comision(link: $link, tabla: $tabla, foraneas: $foraneas,
+            importes: $importes);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar tabla ' . $tabla, data: $out->tabla);
+        }
+        $out->acl = (new _adm())->integra_acl(adm_menu_descripcion: 'Finanzas',
+            adm_namespace_name: 'gamboamartin/inmuebles', adm_namespace_descripcion: 'gamboa.martin/inmuebles',
+            adm_seccion_descripcion: $tabla, adm_seccion_pertenece_descripcion: 'inmuebles',
+            adm_sistema_descripcion: 'inmuebles', etiqueta_label: $etiqueta, link: $link);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar ACL ' . $tabla, data: $out->acl);
+        }
+        return $out;
+    }
+
     private function _add_inm_tipo_beneficiario(PDO $link): array|stdClass
     {
         $out = new stdClass();
@@ -3369,7 +3557,110 @@ class instalacion
 
 
         return $out;
+    }
 
+    private function inm_tipo_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $create = $this->_add_inm_tipo_comision(link: $link);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        $acl = (new _adm())->integra_acl(
+            adm_menu_descripcion: 'Finanzas',
+            adm_namespace_name: 'gamboamartin/inmuebles',
+            adm_namespace_descripcion: 'gamboa.martin/inmuebles',
+            adm_seccion_descripcion: __FUNCTION__,
+            adm_seccion_pertenece_descripcion: 'inmuebles',
+            adm_sistema_descripcion: 'inmuebles',
+            etiqueta_label: 'Tipo de Comision',
+            link: $link
+        );
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar ACL', data: $acl);
+        }
+
+        return $out;
+    }
+
+    private function inm_status_periodo_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $create = $this->_add_inm_status_periodo_comision(link: $link);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        $acl = (new _adm())->integra_acl(
+            adm_menu_descripcion: 'Finanzas',
+            adm_namespace_name: 'gamboamartin/inmuebles',
+            adm_namespace_descripcion: 'gamboa.martin/inmuebles',
+            adm_seccion_descripcion: __FUNCTION__,
+            adm_seccion_pertenece_descripcion: 'inmuebles',
+            adm_sistema_descripcion: 'inmuebles',
+            etiqueta_label: 'Estatus de Periodo de Comision',
+            link: $link
+        );
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar ACL', data: $acl);
+        }
+
+        return $out;
+    }
+
+    private function inm_conf_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $create = $this->_add_inm_conf_comision(link: $link);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        $acl = (new _adm())->integra_acl(
+            adm_menu_descripcion: 'Finanzas',
+            adm_namespace_name: 'gamboamartin/inmuebles',
+            adm_namespace_descripcion: 'gamboa.martin/inmuebles',
+            adm_seccion_descripcion: __FUNCTION__,
+            adm_seccion_pertenece_descripcion: 'inmuebles',
+            adm_sistema_descripcion: 'inmuebles',
+            etiqueta_label: 'Configuracion de Comision',
+            link: $link
+        );
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar ACL', data: $acl);
+        }
+
+        return $out;
+    }
+
+    private function inm_periodo_comision(PDO $link): array|stdClass
+    {
+        $out = new stdClass();
+        $create = $this->_add_inm_periodo_comision(link: $link);
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al agregar tabla', data: $create);
+        }
+        $out->create = $create;
+
+        $acl = (new _adm())->integra_acl(
+            adm_menu_descripcion: 'Finanzas',
+            adm_namespace_name: 'gamboamartin/inmuebles',
+            adm_namespace_descripcion: 'gamboa.martin/inmuebles',
+            adm_seccion_descripcion: __FUNCTION__,
+            adm_seccion_pertenece_descripcion: 'inmuebles',
+            adm_sistema_descripcion: 'inmuebles',
+            etiqueta_label: 'Periodo de Comision',
+            link: $link
+        );
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error al integrar ACL', data: $acl);
+        }
+
+        return $out;
     }
 
     private function inm_tipo_beneficiario(PDO $link): array|stdClass
@@ -4313,6 +4604,54 @@ class instalacion
         }
         $out->inm_tipo_concepto = $inm_tipo_concepto;
 
+        $inm_tipo_comision = $this->inm_tipo_comision(link: $link);
+        if(errores::$error){
+            return (new errores())->error(mensaje: 'Error integrar inm_tipo_comision', data:  $inm_tipo_comision);
+        }
+        $out->inm_tipo_comision = $inm_tipo_comision;
+
+        $inm_status_periodo_comision = $this->inm_status_periodo_comision(link: $link);
+        if(errores::$error){
+            return (new errores())->error(mensaje: 'Error integrar inm_status_periodo_comision',
+                data: $inm_status_periodo_comision);
+        }
+        $out->inm_status_periodo_comision = $inm_status_periodo_comision;
+
+        $inm_conf_comision = $this->inm_conf_comision(link: $link);
+        if(errores::$error){
+            return (new errores())->error(mensaje: 'Error integrar inm_conf_comision', data: $inm_conf_comision);
+        }
+        $out->inm_conf_comision = $inm_conf_comision;
+
+        $inm_periodo_comision = $this->inm_periodo_comision(link: $link);
+        if(errores::$error){
+            return (new errores())->error(mensaje: 'Error integrar inm_periodo_comision', data: $inm_periodo_comision);
+        }
+        $out->inm_periodo_comision = $inm_periodo_comision;
+
+        $inm_status_comision = $this->instala_crud_comision(link: $link, tabla: 'inm_status_comision',
+            etiqueta: 'Estatus de Comision');
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error integrar inm_status_comision', data: $inm_status_comision);
+        }
+        $out->inm_status_comision = $inm_status_comision;
+
+        $inm_comision = $this->instala_crud_comision(link: $link, tabla: 'inm_comision', etiqueta: 'Comision',
+            foraneas: array('em_empleado_id', 'inm_periodo_comision_id', 'inm_conf_comision_id',
+                'inm_status_comision_id'), importes: array('base_comision', 'monto_pago'));
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error integrar inm_comision', data: $inm_comision);
+        }
+        $out->inm_comision = $inm_comision;
+
+        $inm_rel_comision_ubicacion = $this->instala_crud_comision(link: $link, tabla: 'inm_rel_comision_ubicacion',
+            etiqueta: 'Comision y Ubicacion', foraneas: array('inm_comision_id', 'inm_ubicacion_id'));
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error integrar inm_rel_comision_ubicacion',
+                data: $inm_rel_comision_ubicacion);
+        }
+        $out->inm_rel_comision_ubicacion = $inm_rel_comision_ubicacion;
+
         $inm_tipo_beneficiario = $this->inm_tipo_beneficiario(link: $link);
         if(errores::$error){
             return (new errores())->error(mensaje: 'Error integrar inm_tipo_beneficiario', data:  $inm_tipo_beneficiario);
@@ -4474,6 +4813,14 @@ class instalacion
             return (new errores())->error(mensaje: 'Error integrar inm_comprador', data:  $inm_comprador);
         }
         $out->inm_comprador = $inm_comprador;
+
+        $inm_rel_comision_comprador = $this->instala_crud_comision(link: $link, tabla: 'inm_rel_comision_comprador',
+            etiqueta: 'Comision y Comprador', foraneas: array('inm_comision_id', 'inm_comprador_id'));
+        if (errores::$error) {
+            return (new errores())->error(mensaje: 'Error integrar inm_rel_comision_comprador',
+                data: $inm_rel_comision_comprador);
+        }
+        $out->inm_rel_comision_comprador = $inm_rel_comision_comprador;
 
         $inm_rel_prospecto_cliente = $this->inm_rel_prospecto_cliente(link: $link);
         if(errores::$error){
