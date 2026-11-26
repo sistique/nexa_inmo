@@ -75,6 +75,143 @@ class inm_bitacora_status_comprador extends _modelo_parent{
             return $this->error->error(mensaje: 'Error al insertar comprador',data:  $r_alta_bd);
         }
 
+        $r_status_comprador = (new inm_status_comprador(link: $this->link))->registro(
+            registro_id: $this->registro['inm_status_comprador_id']);
+        if (errores::$error) {
+            return $this->error->error(mensaje: 'Error al obtener status de comprador', data: $r_status_comprador);
+        }
+
+        if ($r_status_comprador['inm_status_comprador_descripcion'] === 'COTEJADO') {
+            $r_inm_comprador = (new inm_comprador(link: $this->link))->registro(
+                registro_id: $this->registro['inm_comprador_id']);
+            if (errores::$error) {
+                return $this->error->error(mensaje: 'Error al obtener comprador', data: $r_inm_comprador);
+            }
+
+            $agente_ids = array_unique(array_filter(array(
+                (int)($r_inm_comprador['com_agente_id'] ?? 0),
+                (int)($r_inm_comprador['com_agente_cerrador_id'] ?? 0)
+            ), static fn(int $id): bool => $id > 0));
+
+            foreach ($agente_ids as $agente_id) {
+                $filtro_agente = array('com_agente.id' => $agente_id);
+                $r_com_agente = (new inm_rel_agente_empleado(link: $this->link))->filtro_and(filtro: $filtro_agente);
+                if (errores::$error) {
+                    return $this->error->error(mensaje: 'Error al obtener agente', data: $r_com_agente);
+                }
+                if ($r_com_agente->n_registros <= 0) {
+                    return $this->error->error(mensaje: 'Error el agente no tiene empleado relacionado',
+                        data: $r_com_agente);
+                }
+
+                $filtro_exi = array(
+                    'inm_comprador.id' => $this->registro['inm_comprador_id'],
+                    'em_empleado.id' => $r_com_agente->registros[0]['em_empleado_id']
+                );
+                $existe = (new inm_rel_comision_comprador(link: $this->link))->existe(filtro: $filtro_exi);
+                if (errores::$error) {
+                    return $this->error->error(mensaje: 'Error al validar relacion de comision',
+                        data: $existe);
+                }
+
+                if (!$existe) {
+                    $filtro_conf_comision = array(
+                        'com_tipo_agente.id' => $r_com_agente->registros[0]['com_tipo_agente_id']);
+                    $r_inm_conf_comision = (new inm_conf_comision(link: $this->link))
+                        ->filtro_and(filtro: $filtro_conf_comision);
+                    if (errores::$error) {
+                        return $this->error->error(mensaje: 'Error al obtener configuracion comision',
+                            data: $r_inm_conf_comision);
+                    }
+                    if ($r_inm_conf_comision->n_registros <= 0) {
+                        return $this->error->error(mensaje: 'Error no existe configuracion para el tipo de agente',
+                            data: $r_inm_conf_comision);
+                    }
+                    $config_comision = $r_inm_conf_comision->registros[0];
+
+                    $fecha = date('Y-m-d');
+                    $filtro_rango_peri = array(
+                        $fecha => array(
+                            'valor1' => 'inm_periodo_comision.fecha_inicial',
+                            'valor2' => 'inm_periodo_comision.fecha_final',
+                            'valor_campo' => true
+                        )
+                    );
+                    $filtro_periodo = array(
+                        'inm_periodo_comision.inm_conf_comision_id' =>
+                            $config_comision['inm_conf_comision_id']
+                    );
+                    $r_inm_periodo_comision = (new inm_periodo_comision(link: $this->link))->filtro_and(
+                        filtro: $filtro_periodo, filtro_rango: $filtro_rango_peri, limit: 1);
+                    if (errores::$error) {
+                        return $this->error->error(mensaje: 'Error al obtener periodos', data: $r_inm_periodo_comision);
+                    }
+                    if ($r_inm_periodo_comision->n_registros <= 0) {
+                        return $this->error->error(mensaje: 'Error no existe periodo vigente para la configuracion',
+                            data: $r_inm_periodo_comision);
+                    }
+
+                    $filtro_status_comision = array('inm_status_comision.descripcion' => 'CALCULADA');
+                    $r_inm_status_comision = (new inm_status_comision(link: $this->link))
+                        ->filtro_and(filtro: $filtro_status_comision);
+                    if (errores::$error) {
+                        return $this->error->error(mensaje: 'Error al obtener status de comision',
+                            data: $r_inm_status_comision);
+                    }
+                    if ($r_inm_status_comision->n_registros <= 0) {
+                        return $this->error->error(mensaje: 'Error no existe status CALCULADA',
+                            data: $r_inm_status_comision);
+                    }
+
+                    $filtro_firma = array('inm_comprador.id' => $this->registro['inm_comprador_id']);
+                    $r_inm_firma = (new inm_firma(link: $this->link))->filtro_and(filtro: $filtro_firma);
+                    if (errores::$error) {
+                        return $this->error->error(mensaje: 'Error al obtener firma de comprador',
+                            data: $r_inm_firma);
+                    }
+                    if ($r_inm_firma->n_registros <= 0) {
+                        return $this->error->error(mensaje: 'Error el comprador no tiene firma registrada',
+                            data: $r_inm_firma);
+                    }
+
+                    $base_comision = $r_inm_firma->registros[0]['inm_firma_pago_precio_compra_venta'];
+                    $porcentaje_pago = (float)($config_comision['inm_conf_comision_porcentaje_pago'] ?? 0);
+                    if ($porcentaje_pago > 0) {
+                        $monto_pago = (float)$base_comision * ($porcentaje_pago / 100);
+                    } else {
+                        $monto_pago = (float)($config_comision['inm_conf_comision_monto_pago_fijo'] ?? 0);
+                    }
+
+                    $registro_alta = array();
+                    $registro_alta['em_empleado_id'] = $r_com_agente->registros[0]['em_empleado_id'];
+                    $registro_alta['inm_periodo_comision_id'] = $r_inm_periodo_comision->registros[0]['inm_periodo_comision_id'];
+                    $registro_alta['inm_conf_comision_id'] = $config_comision['inm_conf_comision_id'];
+                    $registro_alta['base_comision'] = $base_comision;
+                    $registro_alta['monto_pago'] = $monto_pago;
+                    $registro_alta['inm_status_comision_id'] = $r_inm_status_comision->registros[0]['inm_status_comision_id'];
+                    $r_inm_comision = (new inm_comision(link: $this->link))->alta_registro(registro: $registro_alta);
+                    if (errores::$error) {
+                        return $this->error->error(mensaje: 'Error al insertar comision', data: $r_inm_comision);
+                    }
+                    if ($r_inm_comision->registro_id <= 0) {
+                        return $this->error->error(mensaje: 'Error no se obtuvo id de la comision insertada',
+                            data: $r_inm_comision);
+                    }
+
+                    $registro_relacion = array(
+                        'inm_comprador_id' => $this->registro['inm_comprador_id'],
+                        'inm_comision_id' => $r_inm_comision->registro_id
+                    );
+                    $r_rel_comision_comprador = (new inm_rel_comision_comprador(link: $this->link))
+                        ->alta_registro(registro: $registro_relacion);
+                    if (errores::$error) {
+                        return $this->error->error(mensaje: 'Error al relacionar comision con comprador',
+                            data: $r_rel_comision_comprador);
+                    }
+                }
+            }
+        }
+
         return $r_alta_bd;
     }
 

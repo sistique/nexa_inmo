@@ -53,13 +53,13 @@ class inm_periodo_asistencia extends _modelo_parent{
         $filtro_especial[1][(string)$this->registro['fecha_fin']]['valor_es_campo'] = true;
         $r_filtro_periodo = $this->filtro_and(filtro: $filtro, filtro_especial: $filtro_especial);
         if (errores::$error) {
-            return $this->error->error(mensaje: 'Error al validar registro', data: $valida);
+            return $this->error->error(mensaje: 'Error al validar registro', data: $r_filtro_periodo);
         }
 
         if ($r_filtro_periodo->n_registros > 0) {
             return $this->error->error(mensaje: 'Error ya existe un periodo del horario ' .
                 $registro_horario['inm_horario_descripcion'] .
-                ' que entra en el mismo rengo de fechas que se intenta insertar', data: $valida);
+                ' que entra en el mismo rengo de fechas que se intenta insertar', data: $r_filtro_periodo);
         }
 
         $keys = array('fecha_inicio','fecha_fin');
